@@ -1,4 +1,43 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Autocomplete from '@mui/material/Autocomplete';
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+
+// 取得所有股
+const [stockList, setStockList] = useState()
+const url: string = 'https://financialmodelingprep.com/api/v3/stock/list?apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry'
+// 關鍵字搜尋
+// const url: string = 'https://financialmodelingprep.com/api/v3/search?query=AAPL&apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry'
+// 單一股搜尋，取得該股全部資訊
+// 如果代號有.，換成ＡSCII(%2E)
+// const url: string = 'https://financialmodelingprep.com/api/v3/profile/2330%2ETW?apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry'
+axios.get(url)
+  .then(response => {
+    console.log(response.data)
+    setStockList(response.data)
+  })
+
+// 搜尋框input change事件
+function SearchInput() {
+  const [searchQuery, setSearchQuery] = useState()
+  const [searchResults, setSearchResults] = useState()
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchResults(stockList?.filter(symbol => stock.symbol.includes()))
+  }
+
+  return (
+    <>
+      <input value={searchQuery} onChange={setSearchQuery} type="text" />
+    </>
+  )
+}
 
 // 定義資產類型
 interface Asset {
@@ -55,6 +94,21 @@ const App: React.FC = () => {
   return (
     <div>
       <h1>Asset Allocation</h1>
+      <h2>Step1. Input asset</h2>
+      <Box
+        component="form"
+        sx={{ '& > :not(style)': { m: 1, width: '25ch' } }}
+        noValidate
+        autoComplete="off"
+      >
+        {/* <Autocomplete
+          disablePortal
+          options={top100Films}
+          sx={{ width: 300 }}
+          renderInput={(params) => <TextField {...params} label="Movie" />}
+        /> */}
+        <Button variant="contained">search</Button>
+      </Box>
 
       <h2>Asset Information</h2>
       {assets.map((asset, index) => (
