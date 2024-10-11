@@ -1,14 +1,23 @@
-import React, { useState } from 'react';
-import axios from 'axios'
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
-// 搜尋代號關鍵字
-// const url: string = 'https://financialmodelingprep.com/api/v3/search?query=2330&apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry'
-// 查詢代號資訊
-const url: string = 'https://financialmodelingprep.com/api/v3/profile/2330TW?apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry'
-axios.get(url)
-  .then(response => {
-    console.log(response)
-  })
+import SearchBox from './components/SearchBox';
+
+import Box from '@mui/material/Box';
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+
+
+// 取得所有股
+// const url: string = 'https://financialmodelingprep.com/api/v3/stock/list?apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry'
+// 關鍵字搜尋
+// const url: string = 'https://financialmodelingprep.com/api/v3/search?query=AAPL&apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry'
+// 單一股搜尋，取得該股全部資訊
+// 如果代號有.，換成ＡSCII(%2E)
+// const url: string = 'https://financialmodelingprep.com/api/v3/profile/2330%2ETW?apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry'
+
 
 // 定義資產類型
 interface Asset {
@@ -65,6 +74,15 @@ const App: React.FC = () => {
   return (
     <div>
       <h1>Asset Allocation</h1>
+      <h2>Step1. Input asset</h2>
+      <Box
+        component="form"
+        sx={{ '& > :not(style)': { m: 1, width: '25ch' } }}
+        noValidate
+        autoComplete="off"
+      >
+        <SearchBox />
+      </Box>
 
       <h2>Asset Information</h2>
       {assets.map((asset, index) => (
