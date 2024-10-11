@@ -1,4 +1,14 @@
 import React, { useState } from 'react';
+import axios from 'axios'
+
+// 搜尋代號關鍵字
+// const url: string = 'https://financialmodelingprep.com/api/v3/search?query=2330&apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry'
+// 查詢代號資訊
+const url: string = 'https://financialmodelingprep.com/api/v3/profile/2330TW?apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry'
+axios.get(url)
+  .then(response => {
+    console.log(response)
+  })
 
 // 定義資產類型
 interface Asset {
