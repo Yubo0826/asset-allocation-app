@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import './App.css'
 
 import SearchBox from './components/SearchBox';
 
@@ -75,14 +76,8 @@ const App: React.FC = () => {
     <div>
       <h1>Asset Allocation</h1>
       <h2>Step1. Input asset</h2>
-      <Box
-        component="form"
-        sx={{ '& > :not(style)': { m: 1, width: '25ch' } }}
-        noValidate
-        autoComplete="off"
-      >
-        <SearchBox />
-      </Box>
+
+      <SearchBox />
 
       <h2>Asset Information</h2>
       {assets.map((asset, index) => (
