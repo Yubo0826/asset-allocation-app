@@ -23,7 +23,7 @@ interface Stock {
 }
 
 function SearchBox() {
-  // https://mui.com/material-ui/react-autocomplete/#asynchronous-requests
+  // https://finmindtrade.com/analysis/#/data/api  
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [searchOptions, setsearchOptions] = useState<Stock[]>([])
   const [value, setValue] = useState<string | null>('')
@@ -70,9 +70,13 @@ function SearchBox() {
   // 處理加入資產 onChange & value
   const handleValueChange = async (event: any, newValue: Stock | null) => {
     if (!newValue) return
+    console.log(newValue);
+    
     setValue(newValue.symbol)
-    const symbol = convertDotToASCII(newValue.symbol)
-    const url: string = `https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry`
+    // const symbol = convertDotToASCII(newValue.symbol)
+    // console.log(symbol)
+    const url: string = `https://financialmodelingprep.com/api/v3/profile/2230.SR?apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry`
+    console.log(url)
     try {
       const response = await axios.get(url)
       console.log(response.data)
