@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+// import React, { useState } from 'react';
+import React from 'react'
+// import axios from 'axios';
 import './App.css'
 
 import SearchBox from './components/SearchBox';
 
-import Box from '@mui/material/Box';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
@@ -17,69 +17,71 @@ import '@fontsource/roboto/700.css';
 // const url: string = 'https://financialmodelingprep.com/api/v3/search?query=AAPL&apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry'
 // 單一股搜尋，取得該股全部資訊
 // 如果代號有.，換成ＡSCII(%2E)
-// const url: string = 'https://financialmodelingprep.com/api/v3/profile/2330%2ETW?apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry'
+// const url: string = 'https://financialmodelingprep.com/api/v3/profile/SPY?apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry'
+
+// const response = await axios.get(url)
+// console.log(response)
 
 
 // 定義資產類型
-interface Asset {
-  name: string;
-  value: number;
-}
+// interface Asset {
+//   name: string;
+//   value: number;
+// }
 
 // 固定比例配置函數
-const fixedAllocationStrategy = (assets: Asset[], allocation: { [key: string]: number }): Asset[] => {
-  const totalValue = assets.reduce((sum, asset) => sum + asset.value, 0);
-  return assets.map(asset => {
-    const targetValue = totalValue * (allocation[asset.name] || 0);
-    return {
-      ...asset,
-      value: targetValue
-    };
-  });
-};
+// const fixedAllocationStrategy = (assets: Asset[], allocation: { [key: string]: number }): Asset[] => {
+//   const totalValue = assets.reduce((sum, asset) => sum + asset.value, 0);
+//   return assets.map(asset => {
+//     const targetValue = totalValue * (allocation[asset.name] || 0);
+//     return {
+//       ...asset,
+//       value: targetValue
+//     };
+//   });
+// };
 
 const App: React.FC = () => {
-  const [assets, setAssets] = useState<Asset[]>([
-    { name: 'AAPL', value: 10000 },
-    { name: 'TLT', value: 5000 },
-    { name: 'GLD', value: 3000 }
-  ]);
+  // const [assets, setAssets] = useState<Asset[]>([
+  //   { name: 'AAPL', value: 10000 },
+  //   { name: 'TLT', value: 5000 },
+  //   { name: 'GLD', value: 3000 }
+  // ]);
   
-  const [allocation, setAllocation] = useState<{ [key: string]: number }>({
-    'AAPL': 0.6,
-    'TLT': 0.3,
-    'GLD': 0.1
-  });
+  // const [allocation, setAllocation] = useState<{ [key: string]: number }>({
+  //   'AAPL': 0.6,
+  //   'TLT': 0.3,
+  //   'GLD': 0.1
+  // });
 
   // 重新分配資產
-  const rebalancePortfolio = () => {
-    const updatedAssets = fixedAllocationStrategy(assets, allocation);
-    setAssets(updatedAssets);
-  };
+  // const rebalancePortfolio = () => {
+  //   const updatedAssets = fixedAllocationStrategy(assets, allocation);
+  //   setAssets(updatedAssets);
+  // };
 
   // 處理資產值的輸入更新
-  const handleAssetChange = (index: number, newValue: number) => {
-    const updatedAssets = [...assets];
-    updatedAssets[index].value = newValue;
-    setAssets(updatedAssets);
-  };
+  // const handleAssetChange = (index: number, newValue: number) => {
+  //   const updatedAssets = [...assets];
+  //   updatedAssets[index].value = newValue;
+  //   setAssets(updatedAssets);
+  // };
 
   // 處理資產比例的輸入更新
-  const handleAllocationChange = (name: string, newPercentage: number) => {
-    setAllocation({
-      ...allocation,
-      [name]: newPercentage
-    });
-  };
+  // const handleAllocationChange = (name: string, newPercentage: number) => {
+  //   setAllocation({
+  //     ...allocation,
+  //     [name]: newPercentage
+  //   });
+  // };
 
   return (
     <div>
       <h1>Asset Allocation</h1>
-      <h2>Step1. Input asset</h2>
 
       <SearchBox />
 
-      <h2>Asset Information</h2>
+      {/* <h2>Asset Information</h2>
       {assets.map((asset, index) => (
         <div key={asset.name}>
           <label>{asset.name}:</label>
@@ -112,7 +114,7 @@ const App: React.FC = () => {
             {asset.name}: {asset.value.toFixed(2)}
           </li>
         ))}
-      </ul>
+      </ul> */}
     </div>
   );
 };
