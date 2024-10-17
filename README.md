@@ -1,50 +1,25 @@
-# React + TypeScript + Vite
+## Demo網站
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[yubo0826.github.io/asset-allocation-app/](https://yubo0826.github.io/asset-allocation-app/)
 
-Currently, two official plugins are available:
+## 如何使用?
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Part1. 創建現有資產:
 
-## Expanding the ESLint configuration
+1. 輸入代號/股數/期望比例(強制規定總和100%)
+2. 系統算出總資金(總市值)
+    
+    註: 總資金 = 每股 "股數*股價" 的總和
+    
+3. 系統算出 平衡後實際比例/平衡後股數增減值
+4. 按儲存，輸入日期，紀錄第一筆紀錄
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### Part2. 有新資金
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
-
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+1. 按"新增資金"按鈕，輸入新資金
+2. 可以額外新增其他股， 修改整體期望比例
+    
+    註: 原有股的股數不可修改
+    
+3. 以 "前一筆紀錄"的總資金+新資金，去計算 平衡後實際比例/平衡後股數增減值
+4. 按儲存，輸入日期，新增一筆紀錄
