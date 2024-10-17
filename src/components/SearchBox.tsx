@@ -82,7 +82,7 @@ function SearchBox() {
   }
 
   // 加入資產 onChange & value
-  const handleValueChange = async (event: any, newValue: Asset | null) => {
+  const handleValueChange = async (event: any, newValue: Stock | null) => {
     console.log(event)
     if (!newValue) return
     
@@ -151,6 +151,10 @@ function SearchBox() {
   
   // 按下平衡按鈕
   const handleBalance = () => {
+    if (!checkExpectedRateTotal()) {
+      alert('期望比例總和必須為100%')
+      return
+    }
     let funds:number = 0
     let balance: number = 0 // 餘額
     // 算出各股平衡後股數
@@ -165,6 +169,16 @@ function SearchBox() {
     assets.forEach(asset => {
       asset.balanced_rate = (asset.price * asset.balanced_share / funds) * 100
     })
+  }
+  
+  // 檢查期望比例總和是否為100
+  const checkExpectedRateTotal = (): boolean => {
+    let total: number = 0
+    assets.forEach(asset => {
+      total += asset.expected_rate
+    })
+
+    return total === 100 ? true : false
   }
 
   return (
@@ -205,7 +219,10 @@ function SearchBox() {
           )}
         />
 
-        <Button onClick={ handleBalance } variant="outlined">平衡</Button>
+        <div>
+          <Button variant="text" color="error">儲存</Button>
+          <Button onClick={ handleBalance } variant="outlined">平衡</Button>
+        </div>
       </div>
 
 
@@ -234,7 +251,7 @@ function SearchBox() {
                   {asset.symbol}
                 </TableCell>
                 <TableCell>{asset.companyName}</TableCell>
-                <TableCell>{asset.price}</TableCell>
+                <TableCell>{asset.price} </TableCell>
 
                 {/* 股數 */}
                 <TableCell>
@@ -288,19 +305,20 @@ function SearchBox() {
 
 
             <TableRow>
-              <TableCell colSpan={4} />
+              <TableCell rowSpan={3} />
+              <TableCell rowSpan={3} />
+              <TableCell rowSpan={3} />
+              <TableCell rowSpan={3} />
               <TableCell colSpan={2}>總資金</TableCell>
-              <TableCell align="right">{ getTotalFunds() }</TableCell>
+              <TableCell align="right">{ getTotalFunds() } </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={4} />
               <TableCell colSpan={2}>平衡後資金</TableCell>
-              <TableCell align="right">{ balanced_funds }</TableCell>
+              <TableCell align="right">{ Math.ceil(balanced_funds) } </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={4} />
               <TableCell colSpan={2}>餘額</TableCell>
-              <TableCell align="right">{ balance }</TableCell>
+              <TableCell align="right">{ Math.ceil(balance) } </TableCell>
             </TableRow>
           </TableBody>
         </Table>
