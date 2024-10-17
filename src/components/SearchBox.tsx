@@ -15,35 +15,45 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
 
 interface Stock {
-  symbol: string,
+  symbol: string, // 股票代號
   price: number,
   companyName: string,
-  exchange: string,
+  exchange: string,  // 交易所名稱 (暫時)
   exchangeShortName: string,
-  share: number  // 股數，美股100股=1張
+}
+
+interface Asset extends Stock {
+  share: number,  // (可輸入) 股數
+  expected_rate: number, // (可輸入) 期望比例
+  balanced_share: number, // 平衡後股數
+  balanced_rate: number  // 平衡後實際比例
 }
 
 function SearchBox() {
-  // https://finmindtrade.com/analysis/#/data/api  
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [searchOptions, setsearchOptions] = useState<Stock[]>([])
-  // const [value, setValue] = useState<string>('')
-  const [assets, setAssets] = useState<Stock[]>([
+  const [assets, setAssets] = useState<Asset[]>([
     {
       symbol: 'AAU',
       companyName: 'Almaden Minerals Ltd.',
-      price: 1.15,
+      price: 50,
       exchange: 'American Stock Exchange',
       exchangeShortName: 'ASE',
-      share: 0
+      share: 20,
+      expected_rate: 60,
+      balanced_rate: 0,
+      balanced_share: 0
     },
     {
-      symbol: 'SSAU',
+      symbol: 'TLL',
       companyName: 'Adsdsn zen Ltd.',
-      price: 2.465,
+      price: 30,
       exchange: 'Taiwan Stock Exchange',
       exchangeShortName: 'TSE',
-      share: 0
+      share: 50,
+      expected_rate: 40,
+      balanced_rate: 0,
+      balanced_share: 0
     }
   ])
 
@@ -64,19 +74,18 @@ function SearchBox() {
     }, 500), []
   )
 
-  // 處理搜尋框變更 onInputChange & inputValue
+  // 搜尋框變更 onInputChange & inputValue
   const handleSearchChange = (event: React.SyntheticEvent, newInputValue: string) => {
     console.log(event);
     setSearchQuery(newInputValue)
     fetchSearchResults(newInputValue)
   }
 
-  // 處理加入資產 onChange & value
-  const handleValueChange = async (event: any, newValue: Stock | null) => {
+  // 加入資產 onChange & value
+  const handleValueChange = async (event: any, newValue: Asset | null) => {
     console.log(event)
     if (!newValue) return
     
-    // setValue(newValue.symbol)
     const url: string = `https://financialmodelingprep.com/api/v3/profile/${newValue.symbol}?apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry`
     console.log(url)
     try {
@@ -84,7 +93,11 @@ function SearchBox() {
       console.log('加入資產', response.data)
       const newAsset = response.data
       newAsset[0].share = 0
+      newAsset[0].balanced_share = 0
+      newAsset[0].expected_rate = 0
+      newAsset[0].balanced_rate = 0
       setAssets(prev => prev.concat(newAsset))
+      setSearchQuery('')
       console.log('目前資產', assets)
     } catch (error) {
       console.error('Error fetch symbol profile', error)
@@ -112,13 +125,46 @@ function SearchBox() {
     setAssets(newAssets)
   }
 
-  const getCapital = (): number => {
-    let capital: number = 0
+  // 取得總資金
+  const getTotalFunds = (): number => {
+    let total_funds: number = 0
     assets.forEach(asset => {
-      console.log(asset.price)
-      capital += (asset.price * asset.share * 100)
+      total_funds += (asset.price * asset.share)
     })
-    return Math.ceil(capital)
+    return Math.ceil(total_funds)
+  }
+
+  // 取得該股平衡後的股數
+  const getBalancedShare = (asset: Asset): number => {
+    return Math.floor(
+      getTotalFunds() * asset.expected_rate / (asset.price * 100) 
+    )
+  } 
+
+  // 取得該股平衡後的餘額
+  const getBalance = (asset: Asset): number => {
+    return (getTotalFunds() * asset.expected_rate) % (asset.price)
+  } 
+
+  const [balanced_funds, setBalanceFunds] = useState<number>(0) // 平衡後總資金
+  const [balance, setBalance] = useState<number>(0)  // 餘額
+  
+  // 按下平衡按鈕
+  const handleBalance = () => {
+    let funds:number = 0
+    let balance: number = 0 // 餘額
+    // 算出各股平衡後股數
+    assets.forEach(asset => {
+      asset.balanced_share = getBalancedShare(asset)
+      funds += asset.balanced_share * asset.price
+      balance += getBalance(asset)
+    })
+    setBalanceFunds(funds)
+    setBalance(balance)
+    // 算出各股平衡後實際比例
+    assets.forEach(asset => {
+      asset.balanced_rate = (asset.price * asset.balanced_share / funds) * 100
+    })
   }
 
   return (
@@ -159,7 +205,7 @@ function SearchBox() {
           )}
         />
 
-        <Button variant="outlined">平衡</Button>
+        <Button onClick={ handleBalance } variant="outlined">平衡</Button>
       </div>
 
 
@@ -171,8 +217,6 @@ function SearchBox() {
               <TableCell>代號</TableCell>
               <TableCell>公司</TableCell>
               <TableCell>股價</TableCell>
-              {/* <TableCell>Exchange Short Name</TableCell>
-              <TableCell>Exchange</TableCell> */}
               <TableCell>股數</TableCell>
               <TableCell>期望比例</TableCell>
               <TableCell>實際比例</TableCell>
@@ -191,8 +235,8 @@ function SearchBox() {
                 </TableCell>
                 <TableCell>{asset.companyName}</TableCell>
                 <TableCell>{asset.price}</TableCell>
-                {/* <TableCell>{asset.exchange}</TableCell>
-                <TableCell>{asset.exchangeShortName}</TableCell> */}
+
+                {/* 股數 */}
                 <TableCell>
                   <input 
                     value={asset.share} 
@@ -206,11 +250,30 @@ function SearchBox() {
                     className='table-input' 
                     type="number" />
                 </TableCell>
+
+                {/* 期望比例 */}
                 <TableCell>
-                  <input className='table-input' type="text" /> %
+                <input 
+                    value={asset.expected_rate} 
+                    onChange={e => {
+                      setAssets((prevAssets) => {
+                        let result = [...prevAssets]
+                        result[index].expected_rate = parseInt(e.target.value)
+                        return result
+                      })
+                    }} 
+                    className='table-input' 
+                    type="number" /> %
                 </TableCell>
-                <TableCell></TableCell>
-                <TableCell></TableCell>
+                {/* 平衡後實際比例 */}
+                <TableCell>
+                    { Math.round(asset.balanced_rate) } %
+                </TableCell>
+                {/* 平衡股數 */}
+                <TableCell>
+                  { asset.balanced_share }
+                </TableCell>
+                
                 <TableCell>
                   <p 
                     onClick={() => handleDelete(index)}
@@ -227,7 +290,17 @@ function SearchBox() {
             <TableRow>
               <TableCell colSpan={4} />
               <TableCell colSpan={2}>總資金</TableCell>
-              <TableCell align="right">{getCapital()}</TableCell>
+              <TableCell align="right">{ getTotalFunds() }</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell colSpan={4} />
+              <TableCell colSpan={2}>平衡後資金</TableCell>
+              <TableCell align="right">{ balanced_funds }</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell colSpan={4} />
+              <TableCell colSpan={2}>餘額</TableCell>
+              <TableCell align="right">{ balance }</TableCell>
             </TableRow>
           </TableBody>
         </Table>
