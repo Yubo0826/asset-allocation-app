@@ -2,6 +2,14 @@
 
 [yubo0826.github.io/asset-allocation-app/](https://yubo0826.github.io/asset-allocation-app/)
 
+## 用途
+
+建立好資產配置後，定期檢查自己的投資組合，看看是否需要進行「再平衡」。
+
+此網站幫助你快速計算平衡股數，調整投資組合到自己當初設定的比重，以維持適合的風險比例。
+
+
+
 ## 如何使用?
 
 ### Part1. 創建現有資產:
