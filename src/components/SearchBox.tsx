@@ -14,12 +14,12 @@ import Paper from '@mui/material/Paper';
 import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
 
+import HistoryTable from './HistoryTable'
+
 interface Stock {
   symbol: string, // 股票代號
   price: number,
-  companyName: string,
-  exchange: string,  // 交易所名稱 (暫時)
-  exchangeShortName: string,
+  companyName: string
 }
 
 interface Asset extends Stock {
@@ -29,6 +29,14 @@ interface Asset extends Stock {
   balanced_rate: number  // 平衡後實際比例
 }
 
+interface HistoryRecord {
+  date: string  // 紀錄的日期
+  assets: Asset[]  // 資產清單
+  totalValue: number // 當前總資產值
+  balance: number // 當前餘額
+}
+
+
 function SearchBox() {
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [searchOptions, setsearchOptions] = useState<Stock[]>([])
@@ -37,8 +45,6 @@ function SearchBox() {
       symbol: 'AAU',
       companyName: 'Almaden Minerals Ltd.',
       price: 50,
-      exchange: 'American Stock Exchange',
-      exchangeShortName: 'ASE',
       share: 20,
       expected_rate: 60,
       balanced_rate: 0,
@@ -48,8 +54,6 @@ function SearchBox() {
       symbol: 'TLL',
       companyName: 'Adsdsn zen Ltd.',
       price: 30,
-      exchange: 'Taiwan Stock Exchange',
-      exchangeShortName: 'TSE',
       share: 50,
       expected_rate: 40,
       balanced_rate: 0,
@@ -126,27 +130,27 @@ function SearchBox() {
   }
 
   // 取得總資金
-  const getTotalFunds = (): number => {
-    let total_funds: number = 0
+  const getTotalValue = (): number => {
+    let total: number = 0
     assets.forEach(asset => {
-      total_funds += (asset.price * asset.share)
+      total += (asset.price * asset.share)
     })
-    return Math.ceil(total_funds)
+    return Math.ceil(total)
   }
 
   // 取得該股平衡後的股數
   const getBalancedShare = (asset: Asset): number => {
     return Math.floor(
-      getTotalFunds() * asset.expected_rate / (asset.price * 100) 
+      getTotalValue() * asset.expected_rate / (asset.price * 100) 
     )
   } 
 
   // 取得該股平衡後的餘額
   const getBalance = (asset: Asset): number => {
-    return (getTotalFunds() * asset.expected_rate) % (asset.price)
+    return (getTotalValue() * asset.expected_rate) % (asset.price)
   } 
 
-  const [balanced_funds, setBalanceFunds] = useState<number>(0) // 平衡後總資金
+  const [balanced_total_value, setBalanceTotalValue] = useState<number>(0) // 平衡後總資金
   const [balance, setBalance] = useState<number>(0)  // 餘額
   
   // 按下平衡按鈕
@@ -155,20 +159,29 @@ function SearchBox() {
       alert('期望比例總和必須為100%')
       return
     }
-    let funds:number = 0
+    let totalValue:number = 0
     let balance: number = 0 // 餘額
     // 算出各股平衡後股數
     assets.forEach(asset => {
       asset.balanced_share = getBalancedShare(asset)
-      funds += asset.balanced_share * asset.price
+      totalValue += asset.balanced_share * asset.price
       balance += getBalance(asset)
     })
-    setBalanceFunds(funds)
+    setBalanceTotalValue(totalValue)
     setBalance(balance)
+    console.log('totalValue', totalValue);
+    console.log('balance', balance);
+    
     // 算出各股平衡後實際比例
-    assets.forEach(asset => {
-      asset.balanced_rate = (asset.price * asset.balanced_share / funds) * 100
+    setAssets(prev => {
+      return prev.map(item => {
+        item.balanced_rate = (item.price * item.balanced_share / totalValue) * 100
+        return item
+      })
     })
+    // assets.forEach(asset => {
+    //   asset.balanced_rate = (asset.price * asset.balanced_share / totalValue) * 100
+    // })
   }
   
   // 檢查期望比例總和是否為100
@@ -179,6 +192,32 @@ function SearchBox() {
     })
 
     return total === 100 ? true : false
+  }
+
+
+  const [history, setHistory] = useState<HistoryRecord[]>([])
+
+  // 將目前資產現況儲存於歷史紀錄
+  const updateHistory = () => {
+    // setAssets(prev => {
+    //   return prev.map(asset => {
+    //     return {
+    //       ...asset,
+    //       share: asset.balanced_share
+    //     }
+    //   })
+    // })
+    console.log(balanced_total_value)
+    
+    const newRecord: HistoryRecord = {
+      date: new Date().toISOString(),
+      assets,
+      totalValue: balanced_total_value,
+      balance: balance
+    };
+    console.log(newRecord)
+    setHistory([...history, newRecord])
+    console.log(history)
   }
 
   return (
@@ -220,7 +259,7 @@ function SearchBox() {
         />
 
         <div>
-          <Button variant="text" color="error">儲存</Button>
+          <Button onClick={ updateHistory } variant="text" color="error">儲存</Button>
           <Button onClick={ handleBalance } variant="outlined">平衡</Button>
         </div>
       </div>
@@ -234,10 +273,10 @@ function SearchBox() {
               <TableCell>代號</TableCell>
               <TableCell>公司</TableCell>
               <TableCell>股價</TableCell>
-              <TableCell>股數</TableCell>
-              <TableCell>期望比例</TableCell>
-              <TableCell>實際比例</TableCell>
-              <TableCell>平衡股數</TableCell>
+              <TableCell>持有股數</TableCell>
+              <TableCell>期望比例 (%)</TableCell>
+              <TableCell>實際比例 (%)</TableCell>
+              <TableCell>平衡後股數 (%)</TableCell>
               <TableCell></TableCell>
             </TableRow>
           </TableHead>
@@ -280,11 +319,11 @@ function SearchBox() {
                       })
                     }} 
                     className='table-input' 
-                    type="number" /> %
+                    type="number" />
                 </TableCell>
                 {/* 平衡後實際比例 */}
                 <TableCell>
-                    { Math.round(asset.balanced_rate) } %
+                    { Math.round(asset.balanced_rate) }
                 </TableCell>
                 {/* 平衡股數 */}
                 <TableCell>
@@ -310,11 +349,11 @@ function SearchBox() {
               <TableCell rowSpan={3} />
               <TableCell rowSpan={3} />
               <TableCell colSpan={2}>總資金</TableCell>
-              <TableCell align="right">{ getTotalFunds() } </TableCell>
+              <TableCell align="right">{ getTotalValue() } </TableCell>
             </TableRow>
             <TableRow>
               <TableCell colSpan={2}>平衡後資金</TableCell>
-              <TableCell align="right">{ Math.ceil(balanced_funds) } </TableCell>
+              <TableCell align="right">{ Math.ceil(balanced_total_value) } </TableCell>
             </TableRow>
             <TableRow>
               <TableCell colSpan={2}>餘額</TableCell>
@@ -323,6 +362,9 @@ function SearchBox() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <h2 style={{ marginTop: '100px'}}>歷史資料</h2>
+      <HistoryTable historyList={history}/>
     </>
   )
 }
