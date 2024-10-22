@@ -15,6 +15,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
 
 import HistoryTable from './HistoryTable'
+import PercentAreaChart from './PercentAreaChart'
 
 interface Stock {
   symbol: string, // 股票代號
@@ -26,7 +27,8 @@ interface Asset extends Stock {
   share: number,  // (可輸入) 股數
   expected_rate: number, // (可輸入) 期望比例
   balanced_share: number, // 平衡後股數
-  balanced_rate: number  // 平衡後實際比例
+  balanced_rate: number,  // 平衡後實際比例
+  value: number // 平衡後的價值 (balanced_share * price)
 }
 
 interface HistoryRecord {
@@ -48,7 +50,8 @@ function SearchBox() {
       share: 20,
       expected_rate: 60,
       balanced_rate: 0,
-      balanced_share: 0
+      balanced_share: 0,
+      value: 0
     },
     {
       symbol: 'TLL',
@@ -57,7 +60,8 @@ function SearchBox() {
       share: 50,
       expected_rate: 40,
       balanced_rate: 0,
-      balanced_share: 0
+      balanced_share: 0,
+      value: 0
     }
   ])
 
@@ -100,6 +104,7 @@ function SearchBox() {
       newAsset[0].balanced_share = 0
       newAsset[0].expected_rate = 0
       newAsset[0].balanced_rate = 0
+      newAsset[0].value = 0
       setAssets(prev => prev.concat(newAsset))
       setSearchQuery('')
       console.log('目前資產', assets)
@@ -164,13 +169,12 @@ function SearchBox() {
     // 算出各股平衡後股數
     assets.forEach(asset => {
       asset.balanced_share = getBalancedShare(asset)
-      totalValue += asset.balanced_share * asset.price
+      asset.value = asset.balanced_share * asset.price
+      totalValue += asset.value
       balance += getBalance(asset)
     })
     setBalanceTotalValue(totalValue)
     setBalance(balance)
-    console.log('totalValue', totalValue);
-    console.log('balance', balance);
     
     // 算出各股平衡後實際比例
     setAssets(prev => {
@@ -199,23 +203,12 @@ function SearchBox() {
 
   // 將目前資產現況儲存於歷史紀錄
   const updateHistory = () => {
-    // setAssets(prev => {
-    //   return prev.map(asset => {
-    //     return {
-    //       ...asset,
-    //       share: asset.balanced_share
-    //     }
-    //   })
-    // })
-    console.log(balanced_total_value)
-    
     const newRecord: HistoryRecord = {
       date: new Date().toISOString(),
-      assets,
+      assets: JSON.parse(JSON.stringify(assets)),
       totalValue: balanced_total_value,
-      balance: balance
+      balance
     };
-    console.log(newRecord)
     setHistory([...history, newRecord])
     console.log(history)
   }
@@ -258,6 +251,8 @@ function SearchBox() {
           )}
         />
 
+        <Button variant="outlined">新增資金</Button>
+
         <div>
           <Button onClick={ updateHistory } variant="text" color="error">儲存</Button>
           <Button onClick={ handleBalance } variant="outlined">平衡</Button>
@@ -276,7 +271,8 @@ function SearchBox() {
               <TableCell>持有股數</TableCell>
               <TableCell>期望比例 (%)</TableCell>
               <TableCell>實際比例 (%)</TableCell>
-              <TableCell>平衡後股數 (%)</TableCell>
+              <TableCell>平衡後股數</TableCell>
+              <TableCell>價值</TableCell>
               <TableCell></TableCell>
             </TableRow>
           </TableHead>
@@ -329,6 +325,10 @@ function SearchBox() {
                 <TableCell>
                   { asset.balanced_share }
                 </TableCell>
+                {/* 價值 */}
+                <TableCell>
+                  { asset.value }
+                </TableCell>
                 
                 <TableCell>
                   <p 
@@ -365,6 +365,9 @@ function SearchBox() {
 
       <h2 style={{ marginTop: '100px'}}>歷史資料</h2>
       <HistoryTable historyList={history}/>
+
+      <h2 style={{ marginTop: '100px'}}>統計資料</h2>
+      <PercentAreaChart />
     </>
   )
 }

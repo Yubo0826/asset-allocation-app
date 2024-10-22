@@ -23,7 +23,8 @@ interface Asset extends Stock {
   share: number,  // (可輸入) 股數
   expected_rate: number, // (可輸入) 期望比例
   balanced_share: number, // 平衡後股數
-  balanced_rate: number  // 平衡後實際比例
+  balanced_rate: number,  // 平衡後實際比例
+  value: number
 }
 
 interface HistoryRecord {
@@ -69,7 +70,6 @@ interface HistoryRecord {
 //   }
 // ];
 
-// 調整 Row 組件來接收正確的 props
 function Row(props: { row: HistoryRecord }) {
   const { row } = props;
   const [open, setOpen] = React.useState(false);
@@ -104,10 +104,10 @@ function Row(props: { row: HistoryRecord }) {
                   <TableRow>
                     <TableCell>代號</TableCell>
                     <TableCell>公司</TableCell>
-                    <TableCell align="right">股價</TableCell>
-                    <TableCell align="right">持有股數</TableCell>
-                    <TableCell align="right">期望比例 (%)</TableCell>
-                    <TableCell align="right">平衡後比例 (%)</TableCell>
+                    <TableCell align="right">股價 (USD)</TableCell>
+                    <TableCell align="right">股數</TableCell>
+                    <TableCell align="right">比例 (%)</TableCell>
+                    <TableCell align="right">價值 (USD)</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -117,8 +117,8 @@ function Row(props: { row: HistoryRecord }) {
                       <TableCell>{asset.companyName}</TableCell>
                       <TableCell align="right">{asset.price}</TableCell>
                       <TableCell align="right">{asset.share}</TableCell>
-                      <TableCell align="right">{asset.expected_rate}</TableCell>
                       <TableCell align="right">{asset.balanced_rate}</TableCell>
+                      <TableCell align="right">{asset.value}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

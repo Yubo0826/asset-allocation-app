@@ -4,7 +4,6 @@ import React from 'react'
 import './App.css'
 
 import SearchBox from './components/SearchBox';
-import HistoryChart from './components/HistoryChart'
 
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -82,9 +81,6 @@ const App: React.FC = () => {
 
       <h2>投資組合</h2>
       <SearchBox />
-
-      <h2 style={{ marginTop: '100px'}}>統計資料</h2>
-      <HistoryChart />
 
       {/* <h2>Asset Information</h2>
       {assets.map((asset, index) => (
