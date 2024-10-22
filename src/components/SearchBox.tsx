@@ -367,7 +367,7 @@ function SearchBox() {
       <HistoryTable historyList={history}/>
 
       <h2 style={{ marginTop: '100px'}}>統計資料</h2>
-      <PercentAreaChart />
+      <PercentAreaChart historyList={history} />
     </>
   )
 }

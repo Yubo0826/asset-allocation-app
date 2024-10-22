@@ -93,44 +93,77 @@ const a = [4000, 3000, 2000, 2780, 1890, 2390, 3490];
 const b = [0, 0, 0, 3908, 4800, 3800, 4300];
 const c = [2400, 2210, 2290, 2000, 2181, 2500, 2100];
 
-interface CollapsibleTableProps {
+interface PercentAreaChartProps {
   historyList: HistoryRecord[]
 }
 
-const getPercents = (array: number[]) =>
-  array.map((v, index) => (100 * v) / (a[index] + b[index] + c[index]))
+// const getPercents = (array: number[]) =>
+//   array.map((v, index) => (100 * v) / (a[index] + b[index] + c[index]))
 
-export default function PercentAreaChart({ historyList }: CollapsibleTableProps) {
+interface SeriesData {
+  data: number[];
+  type: 'line';
+  label: string;
+  area: boolean;
+  stack: 'total';
+  showMark: boolean;
+}
+
+const transformToSeries = (historyList: HistoryRecord[]): SeriesData[] => {
+  const seriesData: Record<string, SeriesData> = {}
+
+  historyList.forEach(record => {
+    record.assets.forEach(asset => {
+      if (!seriesData[asset.symbol]) {
+        seriesData[asset.symbol] = {
+          data: [],
+          type: 'line',
+          label: asset.symbol,
+          area: true,
+          stack: 'total',
+          showMark: false,
+        }
+      }
+      seriesData[asset.symbol].data.push(asset.balanced_rate)
+    })
+  })
+
+  return Object.values(seriesData)
+}
+
+
+export default function PercentAreaChart({ historyList }: PercentAreaChartProps) {
   return (
     <LineChart
       width={500}
       height={300}
-      series={[
-        {
-          data: getPercents(a),
-          type: 'line',
-          label: 'a',
-          area: true,
-          stack: 'total',
-          showMark: false,
-        },
-        {
-          data: getPercents(b),
-          type: 'line',
-          label: 'b',
-          area: true,
-          stack: 'total',
-          showMark: false,
-        },
-        {
-          data: getPercents(c),
-          type: 'line',
-          label: 'c',
-          area: true,
-          stack: 'total',
-          showMark: false,
-        },
-      ]}
+      series={ transformToSeries(historyList) } 
+      // series={[
+      //   {
+      //     data: getPercents(a),
+      //     type: 'line',
+      //     label: 'a',
+      //     area: true,
+      //     stack: 'total',
+      //     showMark: false,
+      //   },
+      //   {
+      //     data: getPercents(b),
+      //     type: 'line',
+      //     label: 'b',
+      //     area: true,
+      //     stack: 'total',
+      //     showMark: false,
+      //   },
+      //   {
+      //     data: getPercents(c),
+      //     type: 'line',
+      //     label: 'c',
+      //     area: true,
+      //     stack: 'total',
+      //     showMark: false,
+      //   },
+      // ]}
       xAxis={[
         {
           scaleType: 'time',
