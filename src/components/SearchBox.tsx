@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import { debounce } from 'lodash'
 
@@ -13,6 +13,12 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import CircularProgress from '@mui/material/CircularProgress';
 import Button from '@mui/material/Button';
+
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+// import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 import HistoryTable from './HistoryTable'
 import PercentAreaChart from './PercentAreaChart'
@@ -135,6 +141,7 @@ function SearchBox() {
   }
 
   // 取得總資金
+  const [totalValue, setTotalValue] = useState<number>(0)
   const getTotalValue = (): number => {
     let total: number = 0
     assets.forEach(asset => {
@@ -142,6 +149,7 @@ function SearchBox() {
     })
     return Math.ceil(total)
   }
+
 
   // 取得該股平衡後的股數
   const getBalancedShare = (asset: Asset): number => {
@@ -164,28 +172,38 @@ function SearchBox() {
       alert('期望比例總和必須為100%')
       return
     }
-    let totalValue:number = 0
+
+    // 計算平衡前總額資產
+    let total: number = 0
+    assets.forEach(asset => {
+      total += (asset.price * asset.share)
+    })
+    setTotalValue(Math.ceil(total) + addMoney)
+
     let balance: number = 0 // 餘額
+    let balancedTotalValue: number = 0
     // 算出各股平衡後股數
     assets.forEach(asset => {
       asset.balanced_share = getBalancedShare(asset)
       asset.value = asset.balanced_share * asset.price
-      totalValue += asset.value
+      balancedTotalValue += asset.value
       balance += getBalance(asset)
     })
-    setBalanceTotalValue(totalValue)
+    setBalanceTotalValue(balancedTotalValue)
     setBalance(balance)
     
     // 算出各股平衡後實際比例
     setAssets(prev => {
       return prev.map(item => {
-        item.balanced_rate = (item.price * item.balanced_share / totalValue) * 100
+        console.log(balanced_total_value);
+        
+        item.balanced_rate = (item.price * item.balanced_share / balancedTotalValue) * 100
         return item
       })
     })
-    // assets.forEach(asset => {
-    //   asset.balanced_rate = (asset.price * asset.balanced_share / totalValue) * 100
-    // })
+
+    // 詢問使用者是否紀錄這筆資料
+    setsavePopup(true)
   }
   
   // 檢查期望比例總和是否為100
@@ -211,6 +229,21 @@ function SearchBox() {
     };
     setHistory([...history, newRecord])
     console.log(history)
+  }
+
+  // 按下平衡後，詢問使用者是否紀錄這筆資料
+  const [savePopup, setsavePopup] = useState<boolean>(false)
+  const handleSavePopupClose = (agree: boolean) => {
+    if (agree) updateHistory()
+    setsavePopup(false)
+  }
+
+  // 新增資金視窗
+  const [addMoneyPopup, setAddMoneyPopup] = useState<boolean>(false)
+  const [addMoney, setAddMoney] = useState<number>(0)
+
+  const handleAddMoneyPopupClose = () => {
+    setAddMoneyPopup(false)
   }
 
   return (
@@ -251,10 +284,8 @@ function SearchBox() {
           )}
         />
 
-        <Button variant="outlined">新增資金</Button>
-
         <div>
-          <Button onClick={ updateHistory } variant="text" color="error">儲存</Button>
+          <Button onClick={ () => setAddMoneyPopup(true) } style={{ marginRight: '15px' }} variant="outlined">新增資金</Button>
           <Button onClick={ handleBalance } variant="outlined">平衡</Button>
         </div>
       </div>
@@ -349,7 +380,10 @@ function SearchBox() {
               <TableCell rowSpan={3} />
               <TableCell rowSpan={3} />
               <TableCell colSpan={2}>總資金</TableCell>
-              <TableCell align="right">{ getTotalValue() } </TableCell>
+              <TableCell align="right">
+                {/* { getTotalValue() }  */}
+                { totalValue }
+              </TableCell>
             </TableRow>
             <TableRow>
               <TableCell colSpan={2}>平衡後資金</TableCell>
@@ -368,6 +402,77 @@ function SearchBox() {
 
       <h2 style={{ marginTop: '100px'}}>統計資料</h2>
       <PercentAreaChart historyList={history} />
+
+       {/* 彈出視窗: 詢問使用者是否紀錄 */}
+      <Dialog
+        open={savePopup}
+        onClose={handleSavePopupClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"是否要記錄這筆資料?"}
+        </DialogTitle>
+        {/* <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            可於下方看統計資料和
+          </DialogContentText>
+        </DialogContent> */}
+        <DialogActions>
+          <Button onClick={() => handleSavePopupClose(false)}>否</Button>
+          <Button onClick={() => handleSavePopupClose(true)} autoFocus>
+            是
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+
+      {/* 彈出視窗: 新增資金 */}
+      <Dialog
+        open={addMoneyPopup}
+        onClose={handleAddMoneyPopupClose}
+        PaperProps={{
+          component: 'form',
+          onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+            event.preventDefault();
+            const formData = new FormData(event.currentTarget);
+            const formJson = Object.fromEntries((formData as any).entries());
+            // const email = formJson.email;
+            // console.log(email);
+            console.log('formJson.money', formJson.money);
+            console.log('addMoney', addMoney);
+            
+            
+            setAddMoney(prev => prev + formJson.money)
+            console.log('addMoney', addMoney);
+            handleBalance()
+            handleAddMoneyPopupClose();
+          },
+        }}
+      >
+        <DialogTitle>添增資金</DialogTitle>
+        <DialogContent>
+          {/* <DialogContentText>
+            To subscribe to this website, please enter your email address here. We
+            will send updates occasionally.
+          </DialogContentText> */}
+          <TextField
+            autoFocus
+            required
+            margin="dense"
+            id="name"
+            name="money"
+            label="金額"
+            type="number"
+            fullWidth
+            variant="standard"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleAddMoneyPopupClose}>取消</Button>
+          <Button type="submit">確定</Button>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }
