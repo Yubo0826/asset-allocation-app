@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import axios from 'axios';
 import { debounce } from 'lodash'
 
+import ControlPointIcon from '@mui/icons-material/ControlPoint';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Table from '@mui/material/Table';
@@ -17,11 +18,14 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-// import DialogContentText from '@mui/material/DialogContentText';
+import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
 import HistoryTable from './HistoryTable'
 import PercentAreaChart from './PercentAreaChart'
+
+import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 interface Stock {
   symbol: string, // 股票代號
@@ -50,25 +54,45 @@ function SearchBox() {
   const [searchOptions, setsearchOptions] = useState<Stock[]>([])
   const [assets, setAssets] = useState<Asset[]>([
     {
-      symbol: 'AAU',
-      companyName: 'Almaden Minerals Ltd.',
-      price: 50,
-      share: 20,
-      expected_rate: 60,
+      symbol: 'VT',
+      companyName: 'Vanguard Total World Stock Index Fund',
+      price: 118.62,
+      share: 2300,
+      expected_rate: 25,
       balanced_rate: 0,
       balanced_share: 0,
       value: 0
     },
     {
-      symbol: 'TLL',
-      companyName: 'Adsdsn zen Ltd.',
-      price: 30,
-      share: 50,
-      expected_rate: 40,
+      symbol: 'SPY',
+      companyName: 'SPDR S&P 500 ETF Trust',
+      price: 577.99,
+      share: 530,
+      expected_rate: 35,
       balanced_rate: 0,
       balanced_share: 0,
       value: 0
-    }
+    },
+    {
+      symbol: 'BND',
+      companyName: 'Vanguard Total Bond Market Index Fund',
+      price: 73.19,
+      share: 3050,
+      expected_rate: 25,
+      balanced_rate: 0,
+      balanced_share: 0,
+      value: 0
+    },
+    {
+      symbol: 'VWO',
+      companyName: 'Vanguard Emerging Markets Stock Index Fund',
+      price: 47.13,
+      share: 1300,
+      expected_rate: 15,
+      balanced_rate: 0,
+      balanced_share: 0,
+      value: 0
+    },
   ])
 
   const fetchSearchResults = useCallback(
@@ -114,6 +138,7 @@ function SearchBox() {
       setAssets(prev => prev.concat(newAsset))
       setSearchQuery('')
       console.log('目前資產', assets)
+      handleAddAssetPopupClose()
     } catch (error) {
       console.error('Error fetch symbol profile', error)
     }
@@ -140,29 +165,8 @@ function SearchBox() {
     setAssets(newAssets)
   }
 
-  // 取得總資金
+
   const [totalValue, setTotalValue] = useState<number>(0)
-  const getTotalValue = (): number => {
-    let total: number = 0
-    assets.forEach(asset => {
-      total += (asset.price * asset.share)
-    })
-    return Math.ceil(total)
-  }
-
-
-  // 取得該股平衡後的股數
-  const getBalancedShare = (asset: Asset): number => {
-    return Math.floor(
-      getTotalValue() * asset.expected_rate / (asset.price * 100) 
-    )
-  } 
-
-  // 取得該股平衡後的餘額
-  const getBalance = (asset: Asset): number => {
-    return (getTotalValue() * asset.expected_rate) % (asset.price)
-  } 
-
   const [balanced_total_value, setBalanceTotalValue] = useState<number>(0) // 平衡後總資金
   const [balance, setBalance] = useState<number>(0)  // 餘額
   
@@ -178,32 +182,36 @@ function SearchBox() {
     assets.forEach(asset => {
       total += (asset.price * asset.share)
     })
-    setTotalValue(Math.ceil(total) + addMoney)
+    total += newMoney
+    setTotalValue(total)
+    console.log('total', total)
+    console.log('newMoney', newMoney)
 
     let balance: number = 0 // 餘額
     let balancedTotalValue: number = 0
     // 算出各股平衡後股數
     assets.forEach(asset => {
-      asset.balanced_share = getBalancedShare(asset)
+      asset.balanced_share = Math.floor(total * asset.expected_rate / (asset.price * 100))
       asset.value = asset.balanced_share * asset.price
       balancedTotalValue += asset.value
-      balance += getBalance(asset)
+      balance += (total * asset.expected_rate) % (asset.price)
     })
     setBalanceTotalValue(balancedTotalValue)
     setBalance(balance)
+
+    console.log('balancedTotalValue', balancedTotalValue)
     
     // 算出各股平衡後實際比例
     setAssets(prev => {
       return prev.map(item => {
-        console.log(balanced_total_value);
-        
         item.balanced_rate = (item.price * item.balanced_share / balancedTotalValue) * 100
         return item
       })
     })
 
+
     // 詢問使用者是否紀錄這筆資料
-    setsavePopup(true)
+    // setsavePopup(true)
   }
   
   // 檢查期望比例總和是否為100
@@ -228,6 +236,7 @@ function SearchBox() {
       balance
     };
     setHistory([...history, newRecord])
+    setSnackbarOpen(true)
     console.log(history)
   }
 
@@ -240,10 +249,38 @@ function SearchBox() {
 
   // 新增資金視窗
   const [addMoneyPopup, setAddMoneyPopup] = useState<boolean>(false)
-  const [addMoney, setAddMoney] = useState<number>(0)
-
+  const [newMoney, setNewMoney] = useState<number>(0)
   const handleAddMoneyPopupClose = () => {
     setAddMoneyPopup(false)
+  }
+  const handleAddMoney = () => {
+    assets.map(asset => {
+      asset.share = asset.balanced_share
+      return asset
+    })
+    handleBalance()
+    handleAddMoneyPopupClose()
+    setNewMoney(0)
+  }
+
+  // 新增資產視窗
+  const [addAssetPopup, setAddAssetPopup] = useState<boolean>(false)
+  const handleAddAssetPopupClose = () => {
+    setAddAssetPopup(false)
+  }
+
+  // 左下儲存成功提示
+  const [SnackbarOpen, setSnackbarOpen] = React.useState(false)
+
+  const handleSnackbarClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: SnackbarCloseReason,
+  ) => {
+    if (reason === 'clickaway') {
+      return
+    }
+
+    setSnackbarOpen(false)
   }
 
   return (
@@ -252,7 +289,7 @@ function SearchBox() {
       <div>{`inputValue: '${searchQuery}'`}</div> */}
 
       <div className='search-input'>
-        <Autocomplete
+        {/* <Autocomplete
           inputValue={searchQuery}
           onInputChange={handleSearchChange}
           onChange={handleValueChange}
@@ -282,9 +319,10 @@ function SearchBox() {
               }}
             />
           )}
-        />
+        /> */}
 
-        <div>
+        <div className='button-bar'>
+          <Button onClick={ updateHistory } color='error'>紀錄</Button>
           <Button onClick={ () => setAddMoneyPopup(true) } style={{ marginRight: '15px' }} variant="outlined">新增資金</Button>
           <Button onClick={ handleBalance } variant="outlined">平衡</Button>
         </div>
@@ -303,7 +341,7 @@ function SearchBox() {
               <TableCell>期望比例 (%)</TableCell>
               <TableCell>實際比例 (%)</TableCell>
               <TableCell>平衡後股數</TableCell>
-              <TableCell>價值</TableCell>
+              <TableCell align='right'>價值</TableCell>
               <TableCell></TableCell>
             </TableRow>
           </TableHead>
@@ -350,15 +388,16 @@ function SearchBox() {
                 </TableCell>
                 {/* 平衡後實際比例 */}
                 <TableCell>
-                    { Math.round(asset.balanced_rate) }
+                    { asset.balanced_rate.toFixed(2) }
                 </TableCell>
                 {/* 平衡股數 */}
                 <TableCell>
                   { asset.balanced_share }
+                  {/* ({ asset.balanced_share - asset.share > 0 ? '+' : '-' }{ Math.abs(asset.balanced_share - asset.share) }) */}
                 </TableCell>
                 {/* 價值 */}
                 <TableCell>
-                  { asset.value }
+                  { asset.value.toFixed(2) }
                 </TableCell>
                 
                 <TableCell>
@@ -366,32 +405,40 @@ function SearchBox() {
                     onClick={() => handleDelete(index)}
                     className='delete-button'
                   >
-                    Delete
+                    刪除
                   </p>
                 </TableCell>
               </TableRow>
             ))}
 
+            <TableRow>
+              <TableCell  colSpan={9} >
+                <p className='newAssetRow' onClick={() => setAddAssetPopup(true)}>
+                  <ControlPointIcon></ControlPointIcon>
+                  新增資產
+                </p>
+              </TableCell>
+            </TableRow>
 
 
             <TableRow>
+              <TableCell rowSpan={3} />
               <TableCell rowSpan={3} />
               <TableCell rowSpan={3} />
               <TableCell rowSpan={3} />
               <TableCell rowSpan={3} />
               <TableCell colSpan={2}>總資金</TableCell>
               <TableCell align="right">
-                {/* { getTotalValue() }  */}
-                { totalValue }
+                { totalValue.toLocaleString() }
               </TableCell>
             </TableRow>
             <TableRow>
               <TableCell colSpan={2}>平衡後資金</TableCell>
-              <TableCell align="right">{ Math.ceil(balanced_total_value) } </TableCell>
+              <TableCell align="right">{ balanced_total_value.toLocaleString() } </TableCell>
             </TableRow>
             <TableRow>
               <TableCell colSpan={2}>餘額</TableCell>
-              <TableCell align="right">{ Math.ceil(balance) } </TableCell>
+              <TableCell align="right">{ balance.toLocaleString() } </TableCell>
             </TableRow>
           </TableBody>
         </Table>
@@ -401,7 +448,9 @@ function SearchBox() {
       <HistoryTable historyList={history}/>
 
       <h2 style={{ marginTop: '100px'}}>統計資料</h2>
-      <PercentAreaChart historyList={history} />
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <PercentAreaChart historyList={history} />
+      </div>
 
        {/* 彈出視窗: 詢問使用者是否紀錄 */}
       <Dialog
@@ -431,24 +480,6 @@ function SearchBox() {
       <Dialog
         open={addMoneyPopup}
         onClose={handleAddMoneyPopupClose}
-        PaperProps={{
-          component: 'form',
-          onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
-            event.preventDefault();
-            const formData = new FormData(event.currentTarget);
-            const formJson = Object.fromEntries((formData as any).entries());
-            // const email = formJson.email;
-            // console.log(email);
-            console.log('formJson.money', formJson.money);
-            console.log('addMoney', addMoney);
-            
-            
-            setAddMoney(prev => prev + formJson.money)
-            console.log('addMoney', addMoney);
-            handleBalance()
-            handleAddMoneyPopupClose();
-          },
-        }}
       >
         <DialogTitle>添增資金</DialogTitle>
         <DialogContent>
@@ -457,6 +488,10 @@ function SearchBox() {
             will send updates occasionally.
           </DialogContentText> */}
           <TextField
+            value={newMoney}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              setNewMoney(parseFloat(event.target.value))
+            }}
             autoFocus
             required
             margin="dense"
@@ -470,9 +505,74 @@ function SearchBox() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleAddMoneyPopupClose}>取消</Button>
-          <Button type="submit">確定</Button>
+          <Button onClick={handleAddMoney}>平衡</Button>
         </DialogActions>
       </Dialog>
+
+
+      {/* 彈出視窗: 新增資產 */}
+      <Dialog
+        open={addAssetPopup}
+        onClose={handleAddAssetPopupClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"新增資產"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            <p>輸入想要的股票代號，搜尋範圍為美股。</p>
+            <Autocomplete
+              inputValue={searchQuery}
+              onInputChange={handleSearchChange}
+              onChange={handleValueChange}
+              sx={{ width: 300 }}
+              open={open}
+              onOpen={handleOpen}
+              onClose={handleClose}
+              isOptionEqualToValue={(option, value) => option.symbol === value.symbol}
+              getOptionLabel={(option) => option?.symbol || ''}
+              options={searchOptions}
+              loading={loading}
+              filterOptions={(x) => x}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="輸入代號"
+                  slotProps={{
+                    input: {
+                      ...params.InputProps,
+                      endAdornment: (
+                        <React.Fragment>
+                          {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </React.Fragment>
+                      ),
+                    },
+                  }}
+                />
+              )}
+            />
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleAddAssetPopupClose}>關閉</Button>
+        </DialogActions>
+      </Dialog>
+
+
+      {/* 左下，紀錄成功提示 */}
+      <Snackbar open={SnackbarOpen} autoHideDuration={4500} onClose={handleSnackbarClose}>
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="success"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          紀錄成功!
+        </Alert>
+      </Snackbar>
     </>
   )
 }

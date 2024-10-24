@@ -134,7 +134,7 @@ const transformToSeries = (historyList: HistoryRecord[]): SeriesData[] => {
 export default function PercentAreaChart({ historyList }: PercentAreaChartProps) {
   return (
     <LineChart
-      width={500}
+      width={600}
       height={300}
       series={ transformToSeries(historyList) } 
       xAxis={[

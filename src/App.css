@@ -7,8 +7,12 @@
 
 .search-input {
   display: flex;
-  justify-content: space-between;
+  justify-content: end;
   padding: 15px 0;
+}
+
+.button-bar Button{
+  margin: 0 5px;
 }
 
 .delete-button {
@@ -22,6 +26,27 @@
 
 .table-input {
   width: 50px;
+}
+
+.newAssetRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3499f9;
+  cursor: pointer;
+}
+
+.newAssetRow:hover {
+  color: #349af9c9;
+}
+
+.newAssetRow svg {
+  padding: 0 5px;
+  font-size: 1.1rem;
+}
+
+.total-field {
+  padding: 15px;
 }
 
 

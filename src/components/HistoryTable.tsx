@@ -89,8 +89,8 @@ function Row(props: { row: HistoryRecord }) {
         <TableCell component="th" scope="row">
           {new Date(row.date).toLocaleDateString()}
         </TableCell>
-        <TableCell align="right">{row.totalValue}</TableCell>
-        <TableCell align="right">{row.balance}</TableCell>
+        <TableCell align="right">{row.totalValue.toLocaleString()}</TableCell>
+        <TableCell align="right">{row.balance.toLocaleString()}</TableCell>
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -116,9 +116,9 @@ function Row(props: { row: HistoryRecord }) {
                       <TableCell>{asset.symbol}</TableCell>
                       <TableCell>{asset.companyName}</TableCell>
                       <TableCell align="right">{asset.price}</TableCell>
-                      <TableCell align="right">{asset.share}</TableCell>
-                      <TableCell align="right">{asset.balanced_rate}</TableCell>
-                      <TableCell align="right">{asset.value}</TableCell>
+                      <TableCell align="right">{asset.balanced_share}</TableCell>
+                      <TableCell align="right">{asset.balanced_rate.toFixed(2)}</TableCell>
+                      <TableCell align="right">{asset.value.toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
