@@ -22,75 +22,62 @@ interface HistoryRecord {
 }
 
 // // 模擬歷史資料
-const historyList: HistoryRecord[] = [
-  {
-    date: '2024-10-21T08:22:20.587Z',
-    totalValue: 2490,
-    balance: 10,
-    assets: [
-      {
-        symbol: 'AAU',
-        companyName: 'Almaden Minerals Ltd.',
-        price: 50,
-        share: 20,
-        expected_rate: 60,
-        balanced_rate: 60,
-        balanced_share: 30,
-        value: 1500
-      },
-      {
-        symbol: 'TLL',
-        companyName: 'Adsdsn zen Ltd.',
-        price: 30,
-        share: 50,
-        expected_rate: 40,
-        balanced_rate: 40,
-        balanced_share: 33,
-        value: 990
-      }
-    ]
-  },
-  {
-    date: '2024-11-21T08:22:20.587Z',
-    totalValue: 2490,
-    balance: 10,
-    assets: [
-      {
-        symbol: 'AAU',
-        companyName: 'Almaden Minerals Ltd.',
-        price: 50,
-        share: 20,
-        expected_rate: 60,
-        balanced_rate: 60,
-        balanced_share: 30,
-        value: 1500
-      },
-      {
-        symbol: 'TLL',
-        companyName: 'Adsdsn zen Ltd.',
-        price: 30,
-        share: 50,
-        expected_rate: 40,
-        balanced_rate: 40,
-        balanced_share: 33,
-        value: 990
-      }
-    ]
-  }
-];
-
-const time = [
-  new Date(2015, 1, 0),
-  new Date(2015, 2, 0),
-  new Date(2015, 3, 0),
-  new Date(2015, 4, 0),
-  new Date(2015, 5, 0),
-  new Date(2015, 6, 0),
-  new Date(2015, 7, 0),
-];
-const a = [4000, 3000, 2000, 2780, 1890, 2390, 3490];
-const b = [0, 0, 0, 3908, 4800, 3800, 4300];
-const c = [2400, 2210, 2290, 2000, 2181, 2500, 2100];
+// const historyList: HistoryRecord[] = [
+//   {
+//     date: '2024-10-21T08:22:20.587Z',
+//     totalValue: 2490,
+//     balance: 10,
+//     assets: [
+//       {
+//         symbol: 'AAU',
+//         companyName: 'Almaden Minerals Ltd.',
+//         price: 50,
+//         share: 20,
+//         expected_rate: 60,
+//         balanced_rate: 60,
+//         balanced_share: 30,
+//         value: 1500
+//       },
+//       {
+//         symbol: 'TLL',
+//         companyName: 'Adsdsn zen Ltd.',
+//         price: 30,
+//         share: 50,
+//         expected_rate: 40,
+//         balanced_rate: 40,
+//         balanced_share: 33,
+//         value: 990
+//       }
+//     ]
+//   },
+//   {
+//     date: '2024-11-21T08:22:20.587Z',
+//     totalValue: 2490,
+//     balance: 10,
+//     assets: [
+//       {
+//         symbol: 'AAU',
+//         companyName: 'Almaden Minerals Ltd.',
+//         price: 50,
+//         share: 20,
+//         expected_rate: 60,
+//         balanced_rate: 60,
+//         balanced_share: 30,
+//         value: 1500
+//       },
+//       {
+//         symbol: 'TLL',
+//         companyName: 'Adsdsn zen Ltd.',
+//         price: 30,
+//         share: 50,
+//         expected_rate: 40,
+//         balanced_rate: 40,
+//         balanced_share: 33,
+//         value: 990
+//       }
+//     ]
+//   }
+// ];
 
 interface PercentAreaChartProps {
   historyList: HistoryRecord[]

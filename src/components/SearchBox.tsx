@@ -276,6 +276,7 @@ function SearchBox() {
     event?: React.SyntheticEvent | Event,
     reason?: SnackbarCloseReason,
   ) => {
+    console.log(event)
     if (reason === 'clickaway') {
       return
     }
