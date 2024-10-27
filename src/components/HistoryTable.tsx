@@ -34,45 +34,14 @@ interface HistoryRecord {
   balance: number // 當前餘額
 }
 
-// 模擬歷史資料
-// const historyList: HistoryRecord[] = [
-//   {
-//     date: '2024-10-21T08:22:20.587Z',
-//     totalValue: 2490,
-//     balance: 10,
-//     assets: [
-//       {
-//         symbol: 'AAU',
-//         companyName: 'Almaden Minerals Ltd.',
-//         price: 50,
-//         share: 20,
-//         expected_rate: 60,
-//         balanced_rate: 0,
-//         balanced_share: 0
-//       }
-//     ]
-//   },
-//   {
-//     date: '2024-10-21T08:22:20.587Z',
-//     totalValue: 2490,
-//     balance: 10,
-//     assets: [
-//       {
-//         symbol: 'AAU',
-//         companyName: 'Almaden Minerals Ltd.',
-//         price: 50,
-//         share: 20,
-//         expected_rate: 60,
-//         balanced_rate: 0,
-//         balanced_share: 0
-//       }
-//     ]
-//   }
-// ];
+interface RowProps {
+  row: HistoryRecord,
+  index: number,
+  onDelete: (index: number) => void
+}
 
-function Row(props: { row: HistoryRecord }) {
-  const { row } = props;
-  const [open, setOpen] = React.useState(false);
+function Row({ row, index, onDelete }: RowProps) {
+  const [open, setOpen] = React.useState(false)
 
   return (
     <React.Fragment>
@@ -91,6 +60,14 @@ function Row(props: { row: HistoryRecord }) {
         </TableCell>
         <TableCell align="right">{row.totalValue.toLocaleString()}</TableCell>
         <TableCell align="right">{row.balance.toLocaleString()}</TableCell>
+        <TableCell align="right">
+        <p 
+          onClick={() => onDelete(index)}
+          className='delete-button'
+        >
+          刪除
+        </p>
+        </TableCell>
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -132,10 +109,11 @@ function Row(props: { row: HistoryRecord }) {
 }
 
 interface CollapsibleTableProps {
-  historyList: HistoryRecord[]
+  historyList: HistoryRecord[],
+  onDelete: (index: number) => void
 }
 
-export default function CollapsibleTable({ historyList }: CollapsibleTableProps) {
+export default function CollapsibleTable({ historyList, onDelete }: CollapsibleTableProps) {
   return (
     <TableContainer component={Paper}>
       <Table aria-label="collapsible table">
@@ -145,11 +123,12 @@ export default function CollapsibleTable({ historyList }: CollapsibleTableProps)
             <TableCell>日期</TableCell>
             <TableCell align="right">資產總額</TableCell>
             <TableCell align="right">餘額</TableCell>
+            <TableCell />
           </TableRow>
         </TableHead>
         <TableBody>
           {historyList.map((item, index) => (
-            <Row key={index} row={item} />
+            <Row key={index} row={item} index={index} onDelete={onDelete} />
           ))}
         </TableBody>
       </Table>
