@@ -17,6 +17,8 @@
 
 - UI框架：MUI
 
+- Data API： [Financial Modeling Prep API](https://site.financialmodelingprep.com/)
+
 ## 如何使用?
 
 ### Part1. 創建現有資產:
