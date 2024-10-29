@@ -21,78 +21,17 @@ interface HistoryRecord {
   balance: number // 當前餘額
 }
 
-// // 模擬歷史資料
-// const historyList: HistoryRecord[] = [
-//   {
-//     date: '2024-10-21T08:22:20.587Z',
-//     totalValue: 2490,
-//     balance: 10,
-//     assets: [
-//       {
-//         symbol: 'AAU',
-//         companyName: 'Almaden Minerals Ltd.',
-//         price: 50,
-//         share: 20,
-//         expected_rate: 60,
-//         balanced_rate: 60,
-//         balanced_share: 30,
-//         value: 1500
-//       },
-//       {
-//         symbol: 'TLL',
-//         companyName: 'Adsdsn zen Ltd.',
-//         price: 30,
-//         share: 50,
-//         expected_rate: 40,
-//         balanced_rate: 40,
-//         balanced_share: 33,
-//         value: 990
-//       }
-//     ]
-//   },
-//   {
-//     date: '2024-11-21T08:22:20.587Z',
-//     totalValue: 2490,
-//     balance: 10,
-//     assets: [
-//       {
-//         symbol: 'AAU',
-//         companyName: 'Almaden Minerals Ltd.',
-//         price: 50,
-//         share: 20,
-//         expected_rate: 60,
-//         balanced_rate: 60,
-//         balanced_share: 30,
-//         value: 1500
-//       },
-//       {
-//         symbol: 'TLL',
-//         companyName: 'Adsdsn zen Ltd.',
-//         price: 30,
-//         share: 50,
-//         expected_rate: 40,
-//         balanced_rate: 40,
-//         balanced_share: 33,
-//         value: 990
-//       }
-//     ]
-//   }
-// ];
-
 interface PercentAreaChartProps {
   historyList: HistoryRecord[]
 }
 
-// const getPercents = (array: number[]) =>
-//   array.map((v, index) => (100 * v) / (a[index] + b[index] + c[index]))
-
 interface SeriesData {
-  data: number[];
-  type: 'line';
-  label: string;
-  area: boolean;
-  stack: 'total';
-  showMark: boolean;
+  data: number[]
+  type: 'line'
+  label: string
+  area: boolean
+  stack: 'total'
+  showMark: boolean
 }
 
 const transformToSeries = (historyList: HistoryRecord[]): SeriesData[] => {
@@ -128,8 +67,6 @@ export default function PercentAreaChart({ historyList }: PercentAreaChartProps)
         {
           scaleType: 'time',
           data: historyList.map(item => new Date(item.date)),
-          // min: time[0].getTime(),
-          // max: time[time.length - 1].getTime(),
         },
       ]}
     />

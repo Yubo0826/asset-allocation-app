@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, createContext } from 'react';
 import axios from 'axios';
 import { debounce } from 'lodash'
 
@@ -27,6 +27,15 @@ import PercentAreaChart from './PercentAreaChart'
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
+import { getFirestore, collection, addDoc, doc, setDoc } from 'firebase/firestore'
+import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { initializeApp } from 'firebase/app'
+import { firebaseConfig } from '../firebase-config'
+
+const app = initializeApp(firebaseConfig)
+const db = getFirestore(app)
+
+
 interface Stock {
   symbol: string, // 股票代號
   price: number,
@@ -50,6 +59,9 @@ interface HistoryRecord {
 
 
 function SearchBox() {
+  const user = createContext(UserContext)
+
+
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [searchOptions, setsearchOptions] = useState<Stock[]>([])
   const [assets, setAssets] = useState<Asset[]>([
@@ -96,10 +108,15 @@ function SearchBox() {
     },
   ])
 
+  const test = () => {
+    console.log(getAuth())
+    
+  }
+
   const fetchSearchResults = useCallback(
     debounce(async (newInputValue: string) => {
       if (!newInputValue) return
-      const url: string = `https://financialmodelingprep.com/api/v3/search?query=${newInputValue}&apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry`
+      const url: string = `https://financialmodelingprep.com/api/v3/search?query=${newInputValue}&apikey=${import.meta.env.VITE_FMP_APIKEY}`
       setLoading(true)
       try {
         const response = await axios.get(url)
@@ -125,7 +142,7 @@ function SearchBox() {
     console.log(event)
     if (!newValue) return
     
-    const url: string = `https://financialmodelingprep.com/api/v3/profile/${newValue.symbol}?apikey=bKSqPjf3mVOT2AzgCzNR7ndIhzZMjyry`
+    const url: string = `https://financialmodelingprep.com/api/v3/profile/${newValue.symbol}?apikey=${import.meta.env.VITE_FMP_APIKEY}`
     console.log(url)
     try {
       const response = await axios.get(url)
@@ -326,6 +343,7 @@ function SearchBox() {
         /> */}
 
         <div className='button-bar'>
+          <button onClick={test}>test</button>
           <Button onClick={ updateHistory } color='error'>紀錄</Button>
           <Button onClick={ () => setAddMoneyPopup(true) } style={{ marginRight: '15px' }} variant="outlined">新增資金</Button>
           <Button onClick={ handleBalance } variant="outlined">平衡</Button>
