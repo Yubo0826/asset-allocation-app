@@ -1,24 +1,28 @@
-import React, { useState } from 'react'
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, User } from 'firebase/auth'
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth'
 import { initializeApp } from 'firebase/app'
-// import { getAnalytics } from "firebase/analytics"
 import Button from '@mui/material/Button'
 import Avatar from '@mui/material/Avatar'
 import { firebaseConfig } from '../firebase-config'
+import { useUser } from '../UserContext'
 
 const app = initializeApp(firebaseConfig)
-// const analytics = getAnalytics(app)
 const auth = getAuth(app)
 const provider = new GoogleAuthProvider()
 
-function Login() {
-  const [user, setUser] = useState<User | null>(null)
-
+function LoginBox() {
+  const { user, setUser } = useUser()
   const handleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, provider)
       console.log(result)
-      setUser(result.user)
+      setUser(
+        {
+          uid: result.user.uid,
+          displayName: result.user.displayName || '',
+          email: result.user.email || '',
+          photoURL: result.user.photoURL || '',
+        }
+      )
     } catch (error) {
       console.error('Login failed:', error)
     }
@@ -29,7 +33,7 @@ function Login() {
   }
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
+    <div style={{ textAlign: 'center', margin: '50px' }}>
       {user ? (
         <>
           <Avatar src={user.photoURL || ''} alt="Google Avatar" style={{ margin: '20px auto' }} />
@@ -47,4 +51,5 @@ function Login() {
   )
 }
 
-export default Login
+
+export default LoginBox

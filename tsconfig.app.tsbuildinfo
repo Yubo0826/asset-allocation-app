@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/historytable.tsx","./src/components/percentareachart.tsx","./src/components/searchbox.tsx"],"version":"5.6.3"}
+{"root":["./src/app.tsx","./src/usercontext.tsx","./src/firebase-config.ts","./src/main.tsx","./src/vite-env.d.ts","./src/components/historytable.tsx","./src/components/percentareachart.tsx","./src/components/searchbox.tsx"],"errors":true,"version":"5.6.3"}
