@@ -248,7 +248,7 @@ function SearchBox() {
   const { user } = useUser()
 
   // 將目前資產現況儲存於歷史紀錄
-  const updateHistory = () => {
+  const updateHistory = async () => {
     const newRecord: HistoryRecord = {
       date: new Date().toISOString(),
       assets: JSON.parse(JSON.stringify(assets)),
@@ -260,14 +260,17 @@ function SearchBox() {
     console.log(JSON.stringify(history))
 
     // 儲存到資料庫
-    // const userRef = collection(db, 'users')
-    // try {
-    //   const recordRef = doc(collection(db, 'users', user?.uid, 'assetRecord'), newRecord.date)
-    //   await setDoc(recordRef, newRecord)
-    //   console.log("資產紀錄儲存成功")
-    // } catch (error) {
-    //   console.error("無法儲存資產紀錄：", error)
-    // }
+    if (user) {
+      try {
+        const userRef = doc(db, 'users', user.uid)
+        const historyRef = collection(userRef, 'assetHistory')
+        await addDoc(historyRef, newRecord)
+        console.log('Record saved successfully')
+      } catch (error) {
+        console.error('Error saving record to Firestore:', error)
+      }
+    }
+    
   }
 
   // 按下平衡後，詢問使用者是否紀錄這筆資料
