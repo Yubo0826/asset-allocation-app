@@ -13,26 +13,10 @@ import Paper from '@mui/material/Paper';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
-interface Stock {
-  symbol: string, // 股票代號
-  price: number,
-  companyName: string
-}
+import { HistoryRecord } from '../types'
 
-interface Asset extends Stock {
-  share: number,  // (可輸入) 股數
-  expected_rate: number, // (可輸入) 期望比例
-  balanced_share: number, // 平衡後股數
-  balanced_rate: number,  // 平衡後實際比例
-  value: number
-}
-
-interface HistoryRecord {
-  date: string  // 紀錄的日期
-  assets: Asset[]  // 資產清單
-  totalValue: number // 當前總資產值
-  balance: number // 當前餘額
-}
+import { useSelector } from 'react-redux'
+import { RootState } from '../redux/store'
 
 interface RowProps {
   row: HistoryRecord,
@@ -114,6 +98,8 @@ interface CollapsibleTableProps {
 }
 
 export default function CollapsibleTable({ historyList, onDelete }: CollapsibleTableProps) {
+  const history = useSelector((state: RootState) => state.historyRecord.records)
+  
   return (
     <TableContainer component={Paper}>
       <Table aria-label="collapsible table">
@@ -127,7 +113,7 @@ export default function CollapsibleTable({ historyList, onDelete }: CollapsibleT
           </TableRow>
         </TableHead>
         <TableBody>
-          {historyList.map((item, index) => (
+          {history.map((item, index) => (
             <Row key={index} row={item} index={index} onDelete={onDelete} />
           ))}
         </TableBody>
