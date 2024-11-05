@@ -12,6 +12,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { RootState, AppDispatch } from '../redux/store'
 import { setUser, clearUser } from '../redux/userSlice'
 import { addRecord, clearRecords } from '../redux/historyRecordSlice'
+import { setAssets } from '../redux/currentAssetsSlice'
 
 import { HistoryRecord } from '../types'
 
@@ -46,6 +47,8 @@ function LoginBox() {
         querySnap.forEach((doc) => {
           const data = doc.data() as HistoryRecord // 將資料強制轉換為 HistoryRecord 類型
           dispatch(addRecord(data))
+          // 把歷史資料最後一筆 (最新) 設置給 Current Assets
+          dispatch(setAssets(data.assets))
         })
       } else {
         dispatch(clearUser())

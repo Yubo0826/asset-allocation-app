@@ -17,14 +17,14 @@ import { HistoryRecord } from '../types'
 
 import { useSelector } from 'react-redux'
 import { RootState } from '../redux/store'
+import { deleteRecord } from '../redux/historyRecordSlice'
 
 interface RowProps {
   row: HistoryRecord,
-  index: number,
-  onDelete: (index: number) => void
+  index: number
 }
 
-function Row({ row, index, onDelete }: RowProps) {
+function Row({ row, index }: RowProps) {
   const [open, setOpen] = React.useState(false)
 
   return (
@@ -46,7 +46,7 @@ function Row({ row, index, onDelete }: RowProps) {
         <TableCell align="right">{row.balance.toLocaleString()}</TableCell>
         <TableCell align="right">
         <p 
-          onClick={() => onDelete(index)}
+          onClick={() => deleteRecord(row.date)}
           className='delete-button'
         >
           刪除
@@ -92,14 +92,14 @@ function Row({ row, index, onDelete }: RowProps) {
   );
 }
 
-interface CollapsibleTableProps {
-  historyList: HistoryRecord[],
-  onDelete: (index: number) => void
-}
+// interface CollapsibleTableProps {
+//   historyList: HistoryRecord[],
+//   onDelete: (index: number) => void
+// }
 
-export default function CollapsibleTable({ historyList, onDelete }: CollapsibleTableProps) {
+export default function CollapsibleTable() {
   const history = useSelector((state: RootState) => state.historyRecord.records)
-  
+
   return (
     <TableContainer component={Paper}>
       <Table aria-label="collapsible table">
@@ -114,7 +114,7 @@ export default function CollapsibleTable({ historyList, onDelete }: CollapsibleT
         </TableHead>
         <TableBody>
           {history.map((item, index) => (
-            <Row key={index} row={item} index={index} onDelete={onDelete} />
+            <Row key={index} row={item} index={index} />
           ))}
         </TableBody>
       </Table>

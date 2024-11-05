@@ -36,6 +36,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { RootState, AppDispatch } from '../redux/store'
 import { setUser, clearUser } from '../redux/userSlice'
 import { setRecords, addRecord, clearRecords, deleteRecord } from '../redux/historyRecordSlice'
+import { addAsset, deleteAsset, setShares, setExpectedRate, balace, calculateBalancedRate } from '../redux/currentAssetsSlice'
 
 import { Stock, Asset, HistoryRecord } from '../types'
 
@@ -46,49 +47,59 @@ const db = getFirestore(app)
 function SearchBox() {
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [searchOptions, setsearchOptions] = useState<Stock[]>([])
-  const [assets, setAssets] = useState<Asset[]>([
-    // Demo 用的假資料
-    {
-      symbol: 'VT',
-      companyName: 'Vanguard Total World Stock Index Fund',
-      price: 118.62,
-      share: 2300,
-      expected_rate: 25,
-      balanced_rate: 0,
-      balanced_share: 0,
-      value: 0
-    },
-    {
-      symbol: 'SPY',
-      companyName: 'SPDR S&P 500 ETF Trust',
-      price: 577.99,
-      share: 530,
-      expected_rate: 35,
-      balanced_rate: 0,
-      balanced_share: 0,
-      value: 0
-    },
-    {
-      symbol: 'BND',
-      companyName: 'Vanguard Total Bond Market Index Fund',
-      price: 73.19,
-      share: 3050,
-      expected_rate: 25,
-      balanced_rate: 0,
-      balanced_share: 0,
-      value: 0
-    },
-    {
-      symbol: 'VWO',
-      companyName: 'Vanguard Emerging Markets Stock Index Fund',
-      price: 47.13,
-      share: 1300,
-      expected_rate: 15,
-      balanced_rate: 0,
-      balanced_share: 0,
-      value: 0
-    },
-  ])
+
+  const dispatch = useDispatch<AppDispatch>()
+  const user = useSelector((state: RootState) => state.user)
+  const history = useSelector((state: RootState) => state.historyRecord.records)
+  const assets = useSelector((state: RootState) => state.assets)
+
+  useEffect(() => {
+    console.log('assets:', assets)
+  }, [])
+
+
+  // const [assets, setAssets] = useState<Asset[]>([
+  //   {
+  //     symbol: 'VT',
+  //     companyName: 'Vanguard Total World Stock Index Fund',
+  //     price: 118.62,
+  //     share: 2300,
+  //     expected_rate: 25,
+  //     balanced_rate: 0,
+  //     balanced_share: 0,
+  //     value: 0
+  //   },
+  //   {
+  //     symbol: 'SPY',
+  //     companyName: 'SPDR S&P 500 ETF Trust',
+  //     price: 577.99,
+  //     share: 530,
+  //     expected_rate: 35,
+  //     balanced_rate: 0,
+  //     balanced_share: 0,
+  //     value: 0
+  //   },
+  //   {
+  //     symbol: 'BND',
+  //     companyName: 'Vanguard Total Bond Market Index Fund',
+  //     price: 73.19,
+  //     share: 3050,
+  //     expected_rate: 25,
+  //     balanced_rate: 0,
+  //     balanced_share: 0,
+  //     value: 0
+  //   },
+  //   {
+  //     symbol: 'VWO',
+  //     companyName: 'Vanguard Emerging Markets Stock Index Fund',
+  //     price: 47.13,
+  //     share: 1300,
+  //     expected_rate: 15,
+  //     balanced_rate: 0,
+  //     balanced_share: 0,
+  //     value: 0
+  //   },
+  // ])
 
   const fetchSearchResults = useCallback(
     debounce(async (newInputValue: string) => {
@@ -124,13 +135,23 @@ function SearchBox() {
     try {
       const response = await axios.get(url)
       console.log('加入資產', response.data)
-      const newAsset = response.data
-      newAsset[0].share = 0
-      newAsset[0].balanced_share = 0
-      newAsset[0].expected_rate = 0
-      newAsset[0].balanced_rate = 0
-      newAsset[0].value = 0
-      setAssets(prev => prev.concat(newAsset))
+      const newAsset = {
+        symbol: response.data.symbol,
+        price: response.data.price,
+        companyName: response.data.companyName,
+        share: 0,
+        balanced_share: 0,
+        expected_rate: 0,
+        balanced_rate: 0,
+        value: 0
+      }
+      // newAsset[0].share = 0
+      // newAsset[0].balanced_share = 0
+      // newAsset[0].expected_rate = 0
+      // newAsset[0].balanced_rate = 0
+      // newAsset[0].value = 0
+      // setAssets(prev => prev.concat(newAsset))
+      dispatch(addAsset(newAsset))
       setSearchQuery('')
       console.log('目前資產', assets)
       handleAddAssetPopupClose()
@@ -152,12 +173,8 @@ function SearchBox() {
     setsearchOptions([])
   };
 
-  const handleDelete = (targetIndex: number) => {
-    const newAssets = assets.filter((item, index) => {
-      console.log(item);
-      return index !== targetIndex
-    })
-    setAssets(newAssets)
+  const handleDelete = (symbol: string) => {
+    dispatch(deleteAsset(symbol))
   }
 
 
@@ -185,24 +202,16 @@ function SearchBox() {
     let balance: number = 0 // 餘額
     let balancedTotalValue: number = 0
     // 算出各股平衡後股數
+    dispatch(balace(total))
     assets.forEach(asset => {
-      asset.balanced_share = Math.floor(total * asset.expected_rate / (asset.price * 100))
-      asset.value = asset.balanced_share * asset.price
       balancedTotalValue += asset.value
       balance += (total * asset.expected_rate) % (asset.price)
     })
     setBalanceTotalValue(balancedTotalValue)
     setBalance(balance)
-
-    console.log('balancedTotalValue', balancedTotalValue)
     
     // 算出各股平衡後實際比例
-    setAssets(prev => {
-      return prev.map(item => {
-        item.balanced_rate = (item.price * item.balanced_share / balancedTotalValue) * 100
-        return item
-      })
-    })
+    dispatch(calculateBalancedRate(balancedTotalValue))
 
 
     // 詢問使用者是否紀錄這筆資料
@@ -223,9 +232,6 @@ function SearchBox() {
   //   {"date":"2024-10-27T07:35:17.869Z","assets":[{"symbol":"VT","companyName":"Vanguard Total World Stock Index Fund","price":118.62,"share":2300,"expected_rate":25,"balanced_rate":25.015372708757255,"balanced_share":1820,"value":215888.4},{"symbol":"SPY","companyName":"SPDR S&P 500 ETF Trust","price":577.99,"share":530,"expected_rate":35,"balanced_rate":34.959764452142245,"balanced_share":522,"value":301710.78},{"symbol":"BND","companyName":"Vanguard Total Bond Market Index Fund","price":73.19,"share":3050,"expected_rate":25,"balanced_rate":25.01793347504606,"balanced_share":2950,"value":215910.5},{"symbol":"VWO","companyName":"Vanguard Emerging Markets Stock Index Fund","price":47.13,"share":1300,"expected_rate":15,"balanced_rate":15.006929364054432,"balanced_share":2748,"value":129513.24}],"totalValue":863022.92,"balance":474.6399999986643},{"date":"2024-10-28T07:35:28.117Z","assets":[{"symbol":"VT","companyName":"Vanguard Total World Stock Index Fund","price":118.62,"share":2300,"expected_rate":35,"balanced_rate":35.01865098836839,"balanced_share":2548,"value":302243.76},{"symbol":"SPY","companyName":"SPDR S&P 500 ETF Trust","price":577.99,"share":530,"expected_rate":20,"balanced_rate":19.956237194973287,"balanced_share":298,"value":172241.02},{"symbol":"BND","companyName":"Vanguard Total Bond Market Index Fund","price":73.19,"share":3050,"expected_rate":10,"balanced_rate":10.006353076370031,"balanced_share":1180,"value":86364.2},{"symbol":"VWO","companyName":"Vanguard Emerging Markets Stock Index Fund","price":47.13,"share":1300,"expected_rate":35,"balanced_rate":35.0187587402883,"balanced_share":6413,"value":302244.69}],"totalValue":863093.6699999999,"balance":596.3599999971971},{"date":"2024-10-29T07:35:55.950Z","assets":[{"symbol":"VT","companyName":"Vanguard Total World Stock Index Fund","price":118.62,"share":2300,"expected_rate":30,"balanced_rate":30.008871788581075,"balanced_share":2184,"value":259066.08000000002},{"symbol":"SPY","companyName":"SPDR S&P 500 ETF Trust","price":577.99,"share":530,"expected_rate":25,"balanced_rate":24.97285932336482,"balanced_share":373,"value":215590.27},{"symbol":"BND","companyName":"Vanguard Total Bond Market Index Fund","price":73.19,"share":3050,"expected_rate":25,"balanced_rate":25.009953106591315,"balanced_share":2950,"value":215910.5},{"symbol":"VWO","companyName":"Vanguard Emerging Markets Stock Index Fund","price":47.13,"share":1300,"expected_rate":20,"balanced_rate":20.008315781462795,"balanced_share":3665,"value":172731.45}],"totalValue":863298.3,"balance":272.4899999984002}
   // ])
 
-  const user = useSelector((state: RootState) => state.user)
-  const dispatch = useDispatch<AppDispatch>()
-  const history = useSelector((state: RootState) => state.historyRecord.records)
 
   // 將目前資產現況儲存於歷史紀錄
   const updateHistory = async () => {
@@ -234,8 +240,7 @@ function SearchBox() {
       assets: JSON.parse(JSON.stringify(assets)),
       totalValue: balanced_total_value,
       balance
-    };
-    // setHistory([...history, newRecord])
+    }
     dispatch(addRecord(newRecord))
     setSnackbarOpen(true)
 
@@ -274,7 +279,7 @@ function SearchBox() {
     setsavePopup(false)
   }
 
-  // 新增資金視窗
+  // 新增資金
   const [addMoneyPopup, setAddMoneyPopup] = useState<boolean>(false)
   const [newMoney, setNewMoney] = useState<number>(0)
   const handleAddMoneyPopupClose = () => {
@@ -354,13 +359,16 @@ function SearchBox() {
                 <TableCell>
                   <input 
                     value={asset.share} 
+                    // onChange={e => {
+                    //   setAssets((prevAssets) => {
+                    //     let result = [...prevAssets]
+                    //     result[index].share = parseInt(e.target.value)
+                    //     return result
+                    //   })
+                    // }} 
                     onChange={e => {
-                      setAssets((prevAssets) => {
-                        let result = [...prevAssets]
-                        result[index].share = parseInt(e.target.value)
-                        return result
-                      })
-                    }} 
+                      dispatch(setShares({ index, value: parseInt(e.target.value) }))
+                    }}
                     className='table-input' 
                     type="number" />
                 </TableCell>
@@ -370,11 +378,7 @@ function SearchBox() {
                 <input 
                     value={asset.expected_rate} 
                     onChange={e => {
-                      setAssets((prevAssets) => {
-                        let result = [...prevAssets]
-                        result[index].expected_rate = parseInt(e.target.value)
-                        return result
-                      })
+                      dispatch(setExpectedRate({ index, value: parseInt(e.target.value) }))
                     }} 
                     className='table-input' 
                     type="number" />
@@ -395,7 +399,7 @@ function SearchBox() {
                 
                 <TableCell>
                   <p 
-                    onClick={() => handleDelete(index)}
+                    onClick={() => handleDelete(asset.symbol)}
                     className='delete-button'
                   >
                     刪除
@@ -438,11 +442,7 @@ function SearchBox() {
       </TableContainer>
 
       <h2 style={{ marginTop: '100px'}}>歷史紀錄</h2>
-      <HistoryTable historyList={history} onDelete={(index: number) => setHistory(prev => {
-        let arr = [...prev]
-        arr.splice(index, 1)
-        return arr
-      })} />
+      <HistoryTable />
 
       <h2 style={{ marginTop: '100px'}}>統計資料</h2>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
