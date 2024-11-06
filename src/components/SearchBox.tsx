@@ -115,7 +115,7 @@ function SearchBox() {
       } finally {
         setLoading(false)
       }
-    }, 500), []
+    }, 750), []
   )
 
   // 搜尋框變更 onInputChange & inputValue
@@ -136,26 +136,21 @@ function SearchBox() {
       const response = await axios.get(url)
       console.log('加入資產', response.data)
       const newAsset = {
-        symbol: response.data.symbol,
-        price: response.data.price,
-        companyName: response.data.companyName,
+        symbol: response.data[0].symbol,
+        price: response.data[0].price,
+        companyName: response.data[0].companyName,
         share: 0,
         balanced_share: 0,
         expected_rate: 0,
         balanced_rate: 0,
         value: 0
       }
-      // newAsset[0].share = 0
-      // newAsset[0].balanced_share = 0
-      // newAsset[0].expected_rate = 0
-      // newAsset[0].balanced_rate = 0
-      // newAsset[0].value = 0
-      // setAssets(prev => prev.concat(newAsset))
       dispatch(addAsset(newAsset))
       setSearchQuery('')
       console.log('目前資產', assets)
       handleAddAssetPopupClose()
     } catch (error) {
+      alert('只能選美股喔')
       console.error('Error fetch symbol profile', error)
     }
   }
@@ -199,24 +194,28 @@ function SearchBox() {
     console.log('total', total)
     console.log('newMoney', newMoney)
 
-    let balance: number = 0 // 餘額
-    let balancedTotalValue: number = 0
-    // 算出各股平衡後股數
     dispatch(balace(total))
-    assets.forEach(asset => {
-      balancedTotalValue += asset.value
-      balance += (total * asset.expected_rate) % (asset.price)
-    })
-    setBalanceTotalValue(balancedTotalValue)
-    setBalance(balance)
-    
-    // 算出各股平衡後實際比例
-    dispatch(calculateBalancedRate(balancedTotalValue))
-
 
     // 詢問使用者是否紀錄這筆資料
     // setsavePopup(true)
   }
+
+  useEffect(() => {
+    let newBalancedTotalValue = 0
+    let newBalance = 0
+    console.log('useEffect')
+    console.log('totalValue', totalValue)
+    assets.forEach(asset => {
+      newBalancedTotalValue += asset.value
+      newBalance += (totalValue * asset.expected_rate) % asset.price
+    })
+
+    setBalanceTotalValue(newBalancedTotalValue)
+    setBalance(newBalance)
+
+    // 算出各股平衡後實際比例
+    dispatch(calculateBalancedRate(newBalancedTotalValue))
+  }, [totalValue])
   
   // 檢查期望比例總和是否為100
   const checkExpectedRateTotal = (): boolean => {
@@ -286,10 +285,16 @@ function SearchBox() {
     setAddMoneyPopup(false)
   }
   const handleAddMoney = () => {
-    assets.map(asset => {
-      asset.share = asset.balanced_share
-      return asset
-    })
+    // assets.map(asset => {
+    //   asset.share = asset.balanced_share
+    //   return asset
+    
+    // })
+    if (newMoney <= 0) {
+      alert('新資金請大於0')
+      return
+    }
+    // dispatch(balace(totalValue + newMoney))
     handleBalance()
     handleAddMoneyPopupClose()
     setNewMoney(0)
@@ -334,7 +339,7 @@ function SearchBox() {
             <TableRow>
               <TableCell>代號</TableCell>
               <TableCell>公司</TableCell>
-              <TableCell>股價</TableCell>
+              <TableCell>今日股價</TableCell>
               <TableCell>持有股數</TableCell>
               <TableCell>期望比例 (%)</TableCell>
               <TableCell>實際比例 (%)</TableCell>
@@ -353,19 +358,12 @@ function SearchBox() {
                   {asset.symbol}
                 </TableCell>
                 <TableCell>{asset.companyName}</TableCell>
-                <TableCell>{asset.price} </TableCell>
+                <TableCell>{asset.price}</TableCell>
 
                 {/* 股數 */}
                 <TableCell>
                   <input 
                     value={asset.share} 
-                    // onChange={e => {
-                    //   setAssets((prevAssets) => {
-                    //     let result = [...prevAssets]
-                    //     result[index].share = parseInt(e.target.value)
-                    //     return result
-                    //   })
-                    // }} 
                     onChange={e => {
                       dispatch(setShares({ index, value: parseInt(e.target.value) }))
                     }}
@@ -478,7 +476,7 @@ function SearchBox() {
         open={addMoneyPopup}
         onClose={handleAddMoneyPopupClose}
       >
-        <DialogTitle>添增資金</DialogTitle>
+        <DialogTitle>增添資金</DialogTitle>
         <DialogContent>
           {/* <DialogContentText>
             To subscribe to this website, please enter your email address here. We
@@ -519,7 +517,8 @@ function SearchBox() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            <p>輸入想要的股票代號，搜尋範圍為美股。</p>
+            輸入股票代號，只能選美股喔。
+          </DialogContentText>
             <Autocomplete
               inputValue={searchQuery}
               onInputChange={handleSearchChange}
@@ -537,6 +536,8 @@ function SearchBox() {
                 <TextField
                   {...params}
                   label="輸入代號"
+                  margin="dense"
+                  variant="standard"
                   slotProps={{
                     input: {
                       ...params.InputProps,
@@ -551,7 +552,6 @@ function SearchBox() {
                 />
               )}
             />
-          </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleAddAssetPopupClose}>關閉</Button>

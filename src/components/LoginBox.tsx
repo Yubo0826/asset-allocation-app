@@ -12,9 +12,9 @@ import { useSelector, useDispatch } from 'react-redux'
 import { RootState, AppDispatch } from '../redux/store'
 import { setUser, clearUser } from '../redux/userSlice'
 import { addRecord, clearRecords } from '../redux/historyRecordSlice'
-import { setAssets } from '../redux/currentAssetsSlice'
-
-import { HistoryRecord } from '../types'
+import { setAssets, clearAssets } from '../redux/currentAssetsSlice'
+import axios from 'axios'
+import { HistoryRecord, Asset } from '../types'
 
 const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
@@ -28,6 +28,27 @@ function LoginBox() {
   // const historyRecord = useSelector((state: RootState) => state.historyRecord.records)
 
   useEffect(() => {
+    const fetchLatestPrices = async (assets: Asset[]) => {
+      try {
+        const updatedAssets = await Promise.all(
+          assets.map(async (asset) => {
+            const url = `https://financialmodelingprep.com/api/v3/profile/${asset.symbol}?apikey=${import.meta.env.VITE_FMP_APIKEY}`
+            const response = await axios.get(url)
+            console.log(response.data)
+            asset.price = response.data[0]?.price || asset.price
+            asset.balanced_rate = 0
+            asset.balanced_share = 0
+            asset.value = 0
+            console.log('asset 最新票價:', asset.price)
+            return asset
+          })
+        )
+        dispatch(setAssets(updatedAssets))
+      } catch (error) {
+        console.error('Error fetching asset prices', error)
+      }
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         // 設置用戶資訊
@@ -37,19 +58,29 @@ function LoginBox() {
           email: user.email || '',
           photoURL: user.photoURL || '',
         }))
-        // 清除之前的歷史紀錄
+        // 清除之前的歷史紀錄 & 現有資產
         dispatch(clearRecords())
+        dispatch(clearAssets())
         // 讀取用戶 firestore 資料，並設置於 Redux
         const userRef = doc(db, 'users', user.uid)
         const historyRef = collection(userRef, 'assetHistory')
         const q = query(historyRef)
         const querySnap = await getDocs(q)
+
         querySnap.forEach((doc) => {
           const data = doc.data() as HistoryRecord // 將資料強制轉換為 HistoryRecord 類型
           dispatch(addRecord(data))
-          // 把歷史資料最後一筆 (最新) 設置給 Current Assets
-          dispatch(setAssets(data.assets))
         })
+
+        // 把歷史資料最後一筆 (最新) 設置給 Current Assets
+        if (!querySnap.empty) {
+          const latestDoc = querySnap.docs[querySnap.size - 1]
+          const latestRecord = latestDoc.data() as HistoryRecord
+          console.log('latestRecord', latestRecord)
+          await fetchLatestPrices(latestRecord.assets)
+          // dispatch(addRecord(latestRecord))
+          // dispatch(setAssets(data.assets))
+        }
       } else {
         dispatch(clearUser())
       }
@@ -71,38 +102,20 @@ function LoginBox() {
       const userDocSnap = await getDoc(userDocRef);
 
       if (userDocSnap.exists()) {
-        // 用户已存在，更新用户信息
+        // 用戶已存在，更新用戶資料
         await setDoc(userDocRef, {
           displayName: result.user.displayName || '',
           email: result.user.email || '',
           photoURL: result.user.photoURL || '',
         });
       } else {
-        // 用户不存在，创建新用户
+        // 用戶不存在，創建新用戶
         await setDoc(userDocRef, {
           displayName: result.user.displayName || '',
           email: result.user.email || '',
           photoURL: result.user.photoURL || '',
         });
       }
-
-      dispatch(setUser({
-        uid: result.user.uid,
-        displayName: result.user.displayName || '',
-        email: result.user.email || '',
-        photoURL: result.user.photoURL || '',
-      }))
-      // 清除之前的歷史紀錄
-      dispatch(clearRecords())
-      // 讀取用戶 firestore 資料，並設置於 Redux
-      const userRef = doc(db, 'users', user.uid)
-      const historyRef = collection(userRef, 'assetHistory')
-      const q = query(historyRef)
-      const querySnap = await getDocs(q)
-      querySnap.forEach((doc) => {
-        const data = doc.data() as HistoryRecord // 將資料強制轉換為 HistoryRecord 類型
-        dispatch(addRecord(data))
-      })
     } catch (error) {
       console.error('Login failed:', error)
     }

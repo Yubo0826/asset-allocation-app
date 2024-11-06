@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Asset } from '../types'
-import { Calculate } from '@mui/icons-material'
 
 const initialState: Asset[] = []
 const AssetsSlice = createSlice({
@@ -33,12 +32,13 @@ const AssetsSlice = createSlice({
         asset.balanced_share = Math.floor(total * asset.expected_rate / (asset.price * 100))
         asset.value = asset.balanced_share * asset.price
       })
+      console.log('balance redux')
+      
     },
     calculateBalancedRate: (state, action: PayloadAction<number>) => {
       const balancedTotalValue = action.payload
-      return state.map(asset => {
+      state.forEach(asset => {
         asset.balanced_rate = (asset.price * asset.balanced_share / balancedTotalValue) * 100
-        return asset
       })
     }
   },

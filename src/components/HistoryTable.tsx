@@ -15,9 +15,16 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 import { HistoryRecord } from '../types'
 
-import { useSelector } from 'react-redux'
-import { RootState } from '../redux/store'
+import { useSelector, useDispatch } from 'react-redux'
+import { RootState, AppDispatch } from '../redux/store'
 import { deleteRecord } from '../redux/historyRecordSlice'
+
+import { collection, query, where, getDocs, deleteDoc, getFirestore, doc } from 'firebase/firestore'
+import { initializeApp } from 'firebase/app'
+import { firebaseConfig } from '../firebase-config'
+
+const app = initializeApp(firebaseConfig)
+const db = getFirestore(app)
 
 interface RowProps {
   row: HistoryRecord,
@@ -26,6 +33,8 @@ interface RowProps {
 
 function Row({ row, index }: RowProps) {
   const [open, setOpen] = React.useState(false)
+  const dispatch = useDispatch<AppDispatch>()
+  const user = useSelector((state: RootState) => state.user)
 
   return (
     <React.Fragment>
@@ -46,7 +55,26 @@ function Row({ row, index }: RowProps) {
         <TableCell align="right">{row.balance.toLocaleString()}</TableCell>
         <TableCell align="right">
         <p 
-          onClick={() => deleteRecord(row.date)}
+          onClick={async () => {
+            const userRef = collection(db, `users/${user.uid}/assetHistory`) // 假設每位用戶有自己的 assetHistory 集合
+            const q = query(userRef, where('date', '==', row.date))
+
+            try {
+              const querySnapshot = await getDocs(q)
+
+              // 刪除查詢到的文件
+              querySnapshot.forEach(async (docSnapshot) => {
+                await deleteDoc(docSnapshot.ref)
+              })
+
+              // 從 Redux 狀態中刪除紀錄
+              dispatch(deleteRecord(row.date))
+              console.log(`Deleted record with date: ${row.date}`)
+            } catch (error) {
+              console.error('Failed to delete record from Firestore:', error)
+            }
+            dispatch(deleteRecord(row.date))
+          }}
           className='delete-button'
         >
           刪除
@@ -89,13 +117,8 @@ function Row({ row, index }: RowProps) {
         </TableCell>
       </TableRow>
     </React.Fragment>
-  );
+  )
 }
-
-// interface CollapsibleTableProps {
-//   historyList: HistoryRecord[],
-//   onDelete: (index: number) => void
-// }
 
 export default function CollapsibleTable() {
   const history = useSelector((state: RootState) => state.historyRecord.records)
@@ -119,5 +142,5 @@ export default function CollapsibleTable() {
         </TableBody>
       </Table>
     </TableContainer>
-  );
+  )
 }
