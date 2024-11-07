@@ -176,6 +176,7 @@ function SearchBox() {
   const [totalValue, setTotalValue] = useState<number>(0)
   const [balanced_total_value, setBalanceTotalValue] = useState<number>(0) // 平衡後總資金
   const [balance, setBalance] = useState<number>(0)  // 餘額
+  const [accumulateNewMoney, setAccumlateNewMoney] = useState<number>(0)  // 累積的新資金
   
   // 按下平衡按鈕
   const handleBalance = () => {
@@ -187,12 +188,16 @@ function SearchBox() {
     // 計算平衡前總額資產
     let total: number = 0
     assets.forEach(asset => {
-      total += (asset.price * asset.share)
+      const share = asset.share
+      total += (asset.price * share)
     })
-    total += newMoney
+    console.log('total:', total)
+    console.log('newMoneyInputValue:', newMoneyInputValue)
+    console.log('accumulateNewMoney:', accumulateNewMoney)
+    total += newMoneyInputValue
+    total += accumulateNewMoney
+    setAccumlateNewMoney(prev => prev + newMoneyInputValue)
     setTotalValue(total)
-    console.log('total', total)
-    console.log('newMoney', newMoney)
 
     dispatch(balace(total))
 
@@ -204,7 +209,6 @@ function SearchBox() {
     let newBalancedTotalValue = 0
     let newBalance = 0
     console.log('useEffect')
-    console.log('totalValue', totalValue)
     assets.forEach(asset => {
       newBalancedTotalValue += asset.value
       newBalance += (totalValue * asset.expected_rate) % asset.price
@@ -280,7 +284,8 @@ function SearchBox() {
 
   // 新增資金
   const [addMoneyPopup, setAddMoneyPopup] = useState<boolean>(false)
-  const [newMoney, setNewMoney] = useState<number>(0)
+  const [newMoneyInputValue, setNewMoneyInputValue] = useState<number>(0)
+
   const handleAddMoneyPopupClose = () => {
     setAddMoneyPopup(false)
   }
@@ -288,16 +293,16 @@ function SearchBox() {
     // assets.map(asset => {
     //   asset.share = asset.balanced_share
     //   return asset
-    
+
     // })
-    if (newMoney <= 0) {
+    if (newMoneyInputValue <= 0) {
       alert('新資金請大於0')
       return
     }
-    // dispatch(balace(totalValue + newMoney))
+    // dispatch(balace(totalValue + newMoneyInputValue))
     handleBalance()
     handleAddMoneyPopupClose()
-    setNewMoney(0)
+    setNewMoneyInputValue(0)
   }
 
   // 新增資產視窗
@@ -326,7 +331,7 @@ function SearchBox() {
       <div className='search-input'>
 
         <div className='button-bar'>
-          <button onClick={test}>test</button>
+          {/* <button onClick={test}>test</button> */}
           <Button onClick={ updateHistory } color='error'>紀錄</Button>
           <Button onClick={ () => setAddMoneyPopup(true) } style={{ marginRight: '15px' }} variant="outlined">新增資金</Button>
           <Button onClick={ handleBalance } variant="outlined">平衡</Button>
@@ -383,16 +388,15 @@ function SearchBox() {
                 </TableCell>
                 {/* 平衡後實際比例 */}
                 <TableCell>
-                    { asset.balanced_rate.toFixed(2) }
+                    { asset.balanced_rate ? asset.balanced_rate.toFixed(2) : '-' }
                 </TableCell>
                 {/* 平衡股數 */}
                 <TableCell>
-                  { asset.balanced_share }
-                  {/* ({ asset.balanced_share - asset.share > 0 ? '+' : '-' }{ Math.abs(asset.balanced_share - asset.share) }) */}
+                  { asset.balanced_share ? asset.balanced_share : '-' }
                 </TableCell>
                 {/* 價值 */}
                 <TableCell>
-                  { asset.value.toFixed(2) }
+                  { asset.value ? asset.value.toFixed(2) : '-' }
                 </TableCell>
                 
                 <TableCell>
@@ -424,7 +428,9 @@ function SearchBox() {
               <TableCell rowSpan={3} />
               <TableCell colSpan={2}>總資金</TableCell>
               <TableCell align="right">
-                { totalValue.toLocaleString() }
+                { totalValue.toLocaleString() } 
+                { accumulateNewMoney ? <span>( + {accumulateNewMoney})</span> : <span></span> }
+                
               </TableCell>
             </TableRow>
             <TableRow>
@@ -483,9 +489,9 @@ function SearchBox() {
             will send updates occasionally.
           </DialogContentText> */}
           <TextField
-            value={newMoney}
+            value={newMoneyInputValue}
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              setNewMoney(parseFloat(event.target.value))
+              setNewMoneyInputValue(parseFloat(event.target.value))
             }}
             autoFocus
             required

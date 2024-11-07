@@ -32,8 +32,6 @@ const AssetsSlice = createSlice({
         asset.balanced_share = Math.floor(total * asset.expected_rate / (asset.price * 100))
         asset.value = asset.balanced_share * asset.price
       })
-      console.log('balance redux')
-      
     },
     calculateBalancedRate: (state, action: PayloadAction<number>) => {
       const balancedTotalValue = action.payload

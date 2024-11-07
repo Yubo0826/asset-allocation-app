@@ -130,14 +130,14 @@ function LoginBox() {
       {user.uid ? (
         <>
           <Avatar src={user.photoURL || ''} alt="Google Avatar" style={{ margin: '20px auto' }} />
-          <h3>Welcome, {user.displayName}</h3>
+          <h3>歡迎, {user.displayName}</h3>
           <Button variant="contained" color="secondary" onClick={handleLogout}>
-            Logout
+            登出
           </Button>
         </>
       ) : (
         <Button variant="contained" color="primary" onClick={handleLogin}>
-          Sign in with Google
+          登入
         </Button>
       )}
     </div>

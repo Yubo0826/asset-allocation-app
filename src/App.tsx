@@ -21,7 +21,7 @@ const App: React.FC = () => {
 
   return (
     <Provider store={store}>
-      <h1>Asset Allocation</h1>
+      <h1 className='tiny5-regular'>Asset Allocation</h1>
       <LoginBox />
       <h2>投資組合</h2>
       <SearchBox />
