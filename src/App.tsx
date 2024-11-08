@@ -4,9 +4,6 @@ import './App.css'
 import SearchBox from './components/SearchBox'
 import LoginBox from './components/LoginBox'
 
-// import { UserProvider } from './UserContext'
-// import { RecordProvider } from './RecordContext'
-
 import { Provider } from 'react-redux'
 import { store } from './redux/store'
 

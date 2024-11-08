@@ -32,6 +32,7 @@ const historyRecordSlice = createSlice({
   initialState,
   reducers: {
     setRecords: (state, action: PayloadAction<HistoryRecordState>) => {
+      console.log(state)
       return action.payload
     },
     addRecord: (state, action: PayloadAction<HistoryRecord>) => {

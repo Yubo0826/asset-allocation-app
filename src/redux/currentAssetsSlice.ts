@@ -7,6 +7,7 @@ const AssetsSlice = createSlice({
   initialState,
   reducers: {
     setAssets: (state, action: PayloadAction<Asset[]>) => {
+      console.log(state)
       return action.payload
     },
     addAsset: (state, action: PayloadAction<Asset>) => {

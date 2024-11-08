@@ -27,18 +27,16 @@ import PercentAreaChart from './PercentAreaChart'
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
-import { getFirestore, collection, addDoc, doc, setDoc, getDoc, query, getDocs } from 'firebase/firestore'
+import { getFirestore, collection, addDoc, doc } from 'firebase/firestore'
 import { initializeApp } from 'firebase/app'
 import { firebaseConfig } from '../firebase-config'
-import { onAuthStateChanged } from 'firebase/auth'
 
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState, AppDispatch } from '../redux/store'
-import { setUser, clearUser } from '../redux/userSlice'
-import { setRecords, addRecord, clearRecords, deleteRecord } from '../redux/historyRecordSlice'
+import { addRecord } from '../redux/historyRecordSlice'
 import { addAsset, deleteAsset, setShares, setExpectedRate, balace, calculateBalancedRate } from '../redux/currentAssetsSlice'
 
-import { Stock, Asset, HistoryRecord } from '../types'
+import { Stock, HistoryRecord } from '../types'
 
 const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
@@ -259,19 +257,6 @@ function SearchBox() {
       }
     } else {
       alert('請先登入喔!')
-    }
-  }
-
-  const test = async () => {
-    if (user.uid) {
-      const userRef = doc(db, 'users', user.uid)
-      const historyRef = collection(userRef, 'assetHistory')
-      const q = query(historyRef)
-      const querySnap = await getDocs(q)
-      querySnap.forEach((doc) => {
-        // doc.data() is never undefined for query doc snapshots
-        console.log(doc.data())
-      })
     }
   }
 

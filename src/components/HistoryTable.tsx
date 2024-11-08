@@ -19,7 +19,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { RootState, AppDispatch } from '../redux/store'
 import { deleteRecord } from '../redux/historyRecordSlice'
 
-import { collection, query, where, getDocs, deleteDoc, getFirestore, doc } from 'firebase/firestore'
+import { collection, query, where, getDocs, deleteDoc, getFirestore } from 'firebase/firestore'
 import { initializeApp } from 'firebase/app'
 import { firebaseConfig } from '../firebase-config'
 
@@ -27,11 +27,10 @@ const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
 
 interface RowProps {
-  row: HistoryRecord,
-  index: number
+  row: HistoryRecord
 }
 
-function Row({ row, index }: RowProps) {
+function Row({ row }: RowProps) {
   const [open, setOpen] = React.useState(false)
   const dispatch = useDispatch<AppDispatch>()
   const user = useSelector((state: RootState) => state.user)
@@ -137,7 +136,7 @@ export default function CollapsibleTable() {
         </TableHead>
         <TableBody>
           {history.map((item, index) => (
-            <Row key={index} row={item} index={index} />
+            <Row key={index} row={item} />
           ))}
         </TableBody>
       </Table>
