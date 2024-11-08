@@ -1,29 +1,7 @@
-import { LineChart } from '@mui/x-charts/LineChart';
-
-interface Stock {
-  symbol: string, // 股票代號
-  price: number,
-  companyName: string
-}
-
-interface Asset extends Stock {
-  share: number,  // (可輸入) 股數
-  expected_rate: number, // (可輸入) 期望比例
-  balanced_share: number, // 平衡後股數
-  balanced_rate: number,  // 平衡後實際比例
-  value: number
-}
-
-interface HistoryRecord {
-  date: string,  // 紀錄的日期
-  assets: Asset[],  // 資產清單
-  totalValue: number, // 當前總資產值
-  balance: number // 當前餘額
-}
-
-interface PercentAreaChartProps {
-  historyList: HistoryRecord[]
-}
+import { LineChart } from '@mui/x-charts/LineChart'
+import { useSelector } from 'react-redux'
+import { RootState } from '../redux/store'
+import { HistoryRecord } from '../types'
 
 interface SeriesData {
   data: number[]
@@ -57,16 +35,18 @@ const transformToSeries = (historyList: HistoryRecord[]): SeriesData[] => {
 }
 
 
-export default function PercentAreaChart({ historyList }: PercentAreaChartProps) {
+export default function PercentAreaChart() {
+  const history = useSelector((state: RootState) => state.historyRecord.records)
+
   return (
     <LineChart
-      width={600}
-      height={300}
-      series={ transformToSeries(historyList) } 
+      sx={{width: '50%', marginTop: '5vh'}}
+      height={400}
+      series={ transformToSeries(history) } 
       xAxis={[
         {
           scaleType: 'time',
-          data: historyList.map(item => new Date(item.date)),
+          data: history.map(item => new Date(item.date)),
         },
       ]}
     />

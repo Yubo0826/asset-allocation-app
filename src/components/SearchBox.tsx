@@ -21,9 +21,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
-import HistoryTable from './HistoryTable'
-import PercentAreaChart from './PercentAreaChart'
-
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
@@ -48,56 +45,11 @@ function SearchBox() {
 
   const dispatch = useDispatch<AppDispatch>()
   const user = useSelector((state: RootState) => state.user)
-  const history = useSelector((state: RootState) => state.historyRecord.records)
   const assets = useSelector((state: RootState) => state.assets)
 
   useEffect(() => {
     console.log('assets:', assets)
   }, [])
-
-
-  // const [assets, setAssets] = useState<Asset[]>([
-  //   {
-  //     symbol: 'VT',
-  //     companyName: 'Vanguard Total World Stock Index Fund',
-  //     price: 118.62,
-  //     share: 2300,
-  //     expected_rate: 25,
-  //     balanced_rate: 0,
-  //     balanced_share: 0,
-  //     value: 0
-  //   },
-  //   {
-  //     symbol: 'SPY',
-  //     companyName: 'SPDR S&P 500 ETF Trust',
-  //     price: 577.99,
-  //     share: 530,
-  //     expected_rate: 35,
-  //     balanced_rate: 0,
-  //     balanced_share: 0,
-  //     value: 0
-  //   },
-  //   {
-  //     symbol: 'BND',
-  //     companyName: 'Vanguard Total Bond Market Index Fund',
-  //     price: 73.19,
-  //     share: 3050,
-  //     expected_rate: 25,
-  //     balanced_rate: 0,
-  //     balanced_share: 0,
-  //     value: 0
-  //   },
-  //   {
-  //     symbol: 'VWO',
-  //     companyName: 'Vanguard Emerging Markets Stock Index Fund',
-  //     price: 47.13,
-  //     share: 1300,
-  //     expected_rate: 15,
-  //     balanced_rate: 0,
-  //     balanced_share: 0,
-  //     value: 0
-  //   },
-  // ])
 
   const fetchSearchResults = useCallback(
     debounce(async (newInputValue: string) => {
@@ -313,11 +265,10 @@ function SearchBox() {
 
   return (
     <>
-      <div className='search-input'>
-
-        <div className='button-bar'>
-          {/* <button onClick={test}>test</button> */}
-          <Button onClick={ updateHistory } color='error'>紀錄</Button>
+      <div className='button-bar'>
+        {/* <button onClick={test}>test</button> */}
+        <Button onClick={ updateHistory } color='error' variant="contained">儲存</Button>
+        <div>
           <Button onClick={ () => setAddMoneyPopup(true) } style={{ marginRight: '15px' }} variant="outlined">新增資金</Button>
           <Button onClick={ handleBalance } variant="outlined">平衡</Button>
         </div>
@@ -412,9 +363,9 @@ function SearchBox() {
               <TableCell rowSpan={3} />
               <TableCell rowSpan={3} />
               <TableCell colSpan={2}>總資金</TableCell>
-              <TableCell align="right">
+              <TableCell align="right" sx={{whiteSpace: 'nowrap'}}>
                 { totalValue.toLocaleString() } 
-                { accumulateNewMoney ? <span>( + {accumulateNewMoney})</span> : <span></span> }
+                { accumulateNewMoney ? <span> {'(+' + accumulateNewMoney + ')'}</span> : <span></span> }
                 
               </TableCell>
             </TableRow>
@@ -430,13 +381,6 @@ function SearchBox() {
         </Table>
       </TableContainer>
 
-      <h2 style={{ marginTop: '100px'}}>歷史紀錄</h2>
-      <HistoryTable />
-
-      <h2 style={{ marginTop: '100px'}}>統計資料</h2>
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <PercentAreaChart historyList={history} />
-      </div>
 
        {/* 彈出視窗: 詢問使用者是否紀錄 */}
       <Dialog
@@ -558,7 +502,7 @@ function SearchBox() {
           variant="filled"
           sx={{ width: '100%' }}
         >
-          紀錄成功!
+          儲存成功!
         </Alert>
       </Snackbar>
     </>

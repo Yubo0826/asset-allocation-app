@@ -83,7 +83,10 @@ function Row({ row }: RowProps) {
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box sx={{ margin: 1 }}>
+            <Box sx={{ margin: 1 }} style={{
+                backgroundColor: '#f0f4f8',
+                padding: '16px'
+              }}>
               <Typography variant="h6" gutterBottom component="div">
                 資產明細
               </Typography>
@@ -123,7 +126,7 @@ export default function CollapsibleTable() {
   const history = useSelector((state: RootState) => state.historyRecord.records)
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} sx={{ marginTop: '36px' }}>
       <Table aria-label="collapsible table">
         <TableHead>
           <TableRow>

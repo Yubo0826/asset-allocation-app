@@ -1,9 +1,14 @@
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, setPersistence, browserLocalPersistence } from 'firebase/auth'
 import { initializeApp } from 'firebase/app'
-import Button from '@mui/material/Button'
+// import Button from '@mui/material/Button'
 import Avatar from '@mui/material/Avatar'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import Logout from '@mui/icons-material/Logout'
+import Tooltip from '@mui/material/Tooltip'
+import IconButton from '@mui/material/IconButton'
 import { firebaseConfig } from '../firebase-config'
-// import { useUser } from '../UserContext'
 import { getFirestore, doc, setDoc, getDoc, query, getDocs, collection } from 'firebase/firestore'
 import { useEffect } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
@@ -15,6 +20,7 @@ import { addRecord, clearRecords } from '../redux/historyRecordSlice'
 import { setAssets, clearAssets } from '../redux/currentAssetsSlice'
 import axios from 'axios'
 import { HistoryRecord, Asset } from '../types'
+import { useState } from 'react'
 
 const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
@@ -22,10 +28,8 @@ const auth = getAuth(app)
 
 
 function LoginBox() {
-  // const { user, setUser } = useUser()
   const dispatch = useDispatch<AppDispatch>()
   const user = useSelector((state: RootState) => state.user)
-  // const historyRecord = useSelector((state: RootState) => state.historyRecord.records)
 
   useEffect(() => {
     const fetchLatestPrices = async (assets: Asset[]) => {
@@ -125,22 +129,110 @@ function LoginBox() {
     signOut(auth).then(() => dispatch(clearUser())).catch((error) => console.error("Logout failed:", error))
   }
 
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const open = Boolean(anchorEl)
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
+  const handleClose = () => {
+    setAnchorEl(null)
+  }
+
   return (
-    <div style={{ textAlign: 'center', margin: '50px' }}>
+    <div>
       {user.uid ? (
         <>
-          <Avatar src={user.photoURL || ''} alt="Google Avatar" style={{ margin: '20px auto' }} />
+          {/* <Avatar src={user.photoURL || ''} alt="Google Avatar" style={{ margin: '20px auto' }} />
           <h3>歡迎, {user.displayName}</h3>
           <Button variant="contained" color="secondary" onClick={handleLogout}>
             登出
-          </Button>
+          </Button> */}
+          <Tooltip title="">
+            <IconButton
+              onClick={handleClick}
+              size="small"
+              sx={{ ml: 2 }}
+              aria-controls={open ? 'account-menu' : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? 'true' : undefined}
+            >
+              <Avatar src={user.photoURL || ''} alt="Google Avatar" sx={{ width: 32, height: 32 }}></Avatar>
+            </IconButton>
+          </Tooltip>
+
+          <Menu
+            anchorEl={anchorEl}
+            id="account-menu"
+            open={open}
+            onClose={handleClose}
+            onClick={handleClose}
+            slotProps={{
+              paper: {
+                elevation: 0,
+                sx: {
+                  overflow: 'visible',
+                  filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                  mt: 1.5,
+                  '& .MuiAvatar-root': {
+                    width: 32,
+                    height: 32,
+                    ml: -0.5,
+                    mr: 1,
+                  },
+                  '&::before': {
+                    content: '""',
+                    display: 'block',
+                    position: 'absolute',
+                    top: 0,
+                    right: 14,
+                    width: 10,
+                    height: 10,
+                    bgcolor: 'background.paper',
+                    transform: 'translateY(-50%) rotate(45deg)',
+                    zIndex: 0,
+                  },
+                },
+              },
+            }}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            >
+            <MenuItem onClick={handleLogout}>
+              <ListItemIcon>
+                <Logout fontSize="small" />
+              </ListItemIcon>
+              Logout
+            </MenuItem>
+          </Menu>
         </>
       ) : (
-        <Button variant="contained" color="primary" onClick={handleLogin}>
-          登入
-        </Button>
+        <>
+        <Tooltip title="">
+          <IconButton
+            onClick={handleLogin}
+            size="small"
+            sx={{ ml: 2 }}
+            aria-controls={open ? 'account-menu' : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? 'true' : undefined}
+          >
+            <Avatar sx={{ width: 32, height: 32 }}></Avatar>
+          </IconButton>
+        </Tooltip>
+
+        
+        </>
+        // <Button variant="contained" color="primary" onClick={handleLogin}>
+        //   登入
+        // </Button>
       )}
+
+
+    
+      
+
     </div>
+
   )
 }
 

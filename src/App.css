@@ -5,10 +5,16 @@
   text-align: center;
 }
 
-.search-input {
+.title-bar {
   display: flex;
-  justify-content: end;
-  padding: 15px 0;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.button-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
 }
 
 .button-bar Button{
@@ -77,4 +83,5 @@
   font-family: "Tiny5", sans-serif;
   font-weight: 400;
   font-style: normal;
+  color: #353535;
 }
