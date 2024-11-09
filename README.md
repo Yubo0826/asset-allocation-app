@@ -19,6 +19,8 @@
 
 - Data API： [Financial Modeling Prep API](https://site.financialmodelingprep.com/)
 
+- 資料庫: Firestore | Firebase
+
 ## 如何使用?
 
 ### Part1. 創建現有資產:
