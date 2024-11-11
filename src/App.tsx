@@ -51,7 +51,7 @@ const App: React.FC = () => {
       <Container sx={{width: '85vw'}}>
         <Box sx={{width: '100%'}}>
           <div className='title-bar'>
-            <h1 className='tiny5-regular'>{ user ? (user.displayName + '\'s ') : '' }Asset Allocation</h1>
+            <h1 className='tiny5-regular'>{ user.displayName ? (user.displayName + '\'s ') : '' }Asset Allocation</h1>
             <LoginBox />
           </div>
           <Box sx={{ width: '100%', bgcolor: 'background.paper', margin: '25px 0' }}>
